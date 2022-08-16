@@ -25,9 +25,11 @@ fnPPAWakefield=function(beta,se,W) {
 }
 
 
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
+dir.create("./05_cred_var/cred_var_by_id")
 
-files = list.files("./credible/inputs_lmm")
+path_to_cond = "/stk05236/credible/inputs_lmm"
+files = list.files(path_to_cond)
 
 known = c()
 
@@ -48,7 +50,7 @@ files = files[which(known)]
 for (y in 1:length(files)){ 
 
 
-	input_file = paste("./credible/inputs_lmm/",files[y],sep="")
+	input_file = paste(path_to_cond,"/",files[y],sep="")
 
 	tin = read.table(as.character(input_file),  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
@@ -108,7 +110,7 @@ for (y in 1:length(files)){
 # write result
 	name=unlist(strsplit(files[y],".",fixed=TRUE))
 	
-	output_file = paste("./lmm/known_loci/07_cred_var/cred_var_by_id/",name[2],"cred_var.txt",sep="_")
+	output_file = paste("./05_cred_var/cred_var_by_id/",name[2],"_cred_var.txt",sep="")
 	
 	
 	write.table(tin, file=as.character(output_file), sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)

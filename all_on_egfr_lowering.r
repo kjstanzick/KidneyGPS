@@ -1,7 +1,7 @@
 library("data.table")
 all_sig=fread("/stk05236/lmm/03_eval/metal_eGFR_meta1.TBL.Indep.500k.5e8.indep.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 cred_var=read.table("/stk05236/lmm/all_loci/07_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-library(data.table)
+
 region_table=read.table("/stk05236/lmm/all_loci/05_region_table/region_table_MHC_cred_var_cys_bun.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 CADD=read.table("/stk05236/lmm/all_loci/cadd_lmm/results/cadd_in_cred_var_no_dup.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 NEPTUNE_glo=fread("/stk05236/lmm/all_loci/neptune/cred_var_with_nephQTL_glomerular.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
