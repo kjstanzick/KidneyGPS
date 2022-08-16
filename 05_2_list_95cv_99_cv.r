@@ -1,6 +1,6 @@
 setwd("/stk05236/clean_GPS")
 
-files = list.files("./07_cred_var/cred_var_by_id")
+files = list.files("./05_cred_var/cred_var_by_id")
 
 all_cred_95 = c()
 
@@ -28,9 +28,9 @@ for (y in 1:length(files)){
 	
 	id=unlist(strsplit(name,"_"))
 	
-	##### id[4] ist die region_id
+	##### id[3] ist die region_id
 	
-	region_id[y] = id[4]
+	region_id[y] = id[3]
 	
 	names(cred_95) = c("rsid","chr","pos","ea","eaf","beta","se","p","n","ppa","cppa","ci95","ci99")
 
@@ -38,9 +38,9 @@ for (y in 1:length(files)){
 	
 	
 	
-	if(id[6]=="cond"){
+	if(id[5]=="cond"){
 	
-		signal_id[y]=id[5]
+		signal_id[y]=id[4]
 	}else{signal_id[y] = 1}
 
 	
