@@ -12,4 +12,4 @@ dir.create("./04_locus_table")
 dir.create("./05_cred_var")
 dir.create("./06_signal_table")
 dir.create("./07_GPS")
-
+dir.create("./08_eQTLs")

@@ -1,14 +1,14 @@
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
 
-cred_var_99 = read.table("./lmm/all_loci/07_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+cred_var_99 = read.table("./05_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-neptune_files = list.files("./inputs/nephQTL")
+neptune_files = list.files("/stk05236/inputs/nephQTL")
 
 ##############################################
 # add cpaid:
 library(data.table)
 
-ref = fread( "./lmm/03_eval/european/metal_eGFR_meta_ea1.TBL.map.annot.gc.gz",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+ref = fread( "/stk05236/lmm/03_eval/european/metal_eGFR_meta_ea1.TBL.map.annot.gc.gz",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
 ref_cpaid = ref[,c(1,15)]
 
@@ -30,7 +30,8 @@ cred_var_99 = merge (cred_var_99,ref_cpaid, by.x="rsid", by.y="RSID",all.x=TRUE,
 #
 #
 #########################################################
-library(data.table)
+
+dir.create("./08_eQTLs/neputne")
 
 neptune_spalten = c(5,6,7,8,10,11,12)
 
@@ -76,7 +77,7 @@ for (y in 1:length(neptune_files)){
 	
 	neptune_table = merge(neptune_table,cred_var_99, by.x = "cpaid", by.y="MarkerName", all.x=TRUE, all.y=FALSE)
 	
-	output=paste("./lmm/all_loci/neptune/cred_var_with_nephQTL_",tissue[y],".txt",sep="")
+	output=paste("./08_eQTLs/neptune/cred_var_with_nephQTL_",tissue[y],".txt",sep="")
 	
 	write.table(neptune_table, file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	

@@ -1,8 +1,8 @@
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
 
-cred_var_99 = read.table("./lmm/all_loci/07_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+cred_var_99 = read.table("./05_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-gtex_files = list.files("./inputs/gtex")
+gtex_files = list.files("/stk05236/inputs/gtex")
 
 gtex_files = gtex_files[-which(grepl("10rows",gtex_files))]
 
@@ -22,13 +22,14 @@ gtex_files = gtex_files[-c(1,2)]
 #########################################################
 library(data.table)
 
+dir.create("./08_eQTLs/gtex")
 #gtex_spalten = c(6,7,8,9,13,14,15,16)
 
 gtex_table = data.frame()
 
 for (y in 1:length(gtex_files)){
 
-	input_file = paste("./inputs/gtex/",gtex_files[y],sep="")
+	input_file = paste("/stk05236/inputs/gtex/",gtex_files[y],sep="")
 		
 	input = fread(input_file,  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 		
@@ -36,39 +37,7 @@ for (y in 1:length(gtex_files)){
 	
 	idx = which (input$rs_id_dbSNP151_GRCh38p7 %in% cred_var_99$rsid)
 	
-	gtex_table = input[idx,]
-	
-	#for (i in 1:nrow(cred_var_99)){
-		
-		#idx = which(input$rs_id_dbSNP151_GRCh38p7 == cred_var_99$rsid[i])
-		#if (any(input$rs_id_dbSNP151_GRCh38p7 == cred_var_99$rsid[i])){
-				
-			#print(paste("i = ", i))
-			
-			# stop("Hallo")
-			
-			#if(nrow(gtex_table)==0){
-				
-				#gtex_table = input[idx,gtex_spalten]
-					
-			#}else{
-				
-				#gtex_table = rbind(gtex_table,input[idx,gtex_spalten], make.row.names = FALSE, stringsAsFactors = FALSE)
-					
-			#}
-				
-			
-			#region = c(region,rep(cred_var_99$region_id[i],length(idx)))
-			
-			#signal = c(signal,rep(cred_var_99$signal_id[i],length(idx)))
-			
-			#ea = c(ea,rep(toupper(cred_var_99$ea[i]),length(idx)))
-			
-		#}
-		
-		
-	#}
-	
+	gtex_table = input[idx,]	
 	
 	input_tissue = unlist(strsplit(gtex_files[y],".",fixed=TRUE))
 				
@@ -78,15 +47,30 @@ for (y in 1:length(gtex_files)){
 	
 	gtex_table = merge(gtex_table, cred_var_99, by.x = "rs_id_dbSNP151_GRCh38p7", by.y= "rsid")
 	
-	output = paste("./lmm/all_loci/gtex_eqtl/cred_var_wakefield_with_gtex_",input_tissue[1],".txt",sep="")
+	output = paste("./08_eQTLs/gtex_/cred_var_with_gtex_",input_tissue[1],".txt",sep="")
 	
 	write.table(gtex_table, file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	
-	#write.table(gtex_table, file="./eQTL/gtex/all_cred_var_zscore_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE, append = TRUE)
-	#print(y)
 }
 			
-			
+gtex_files = list.files("./08_eQTLs/gtex")
+
+library(data.table)
+
+for (i in 1:length(gtex_files)){
+
+	input_file = paste("./08_eQTLs/gtex/",gtex_files[i],sep="")
+	
+	input = fread(input_file,  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+	
+	if (i==1) { gtex_table = input}
+	
+	else{gtex_table = rbind(gtex_table, input, make.row.names = FALSE, stringsAsFactors = FALSE)}
+	
+	
+}
+
+write.table(gtex_table, file="./08_eQTLs/gtex/all_cred_var_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)		
 				
 		
 			
