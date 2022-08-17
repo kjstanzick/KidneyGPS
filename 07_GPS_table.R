@@ -1,26 +1,10 @@
 library(data.table)
 
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
 
-new = fread( "./lmm/all_loci/04_candidate_genes/lead_genes_annotated.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+new = fread( "./03_candidate_genes/lead_genes_annotated.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
-genes = fread( "./inputs/genes/glist-hg19.tw.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-
-real_genes = read.table("./inputs/synonym_table.txt", header=TRUE,sep="\t", stringsAsFactors=FALSE, quote="", fill=TRUE)
-
-real_genes = real_genes[which(!is.na(real_genes$approved_symbol)),]
-
-real_genes = real_genes[which(!is.na(real_genes$genes)),]
-
-for(i in 1:nrow(genes)){
-
-	if(!any(genes$Gene[i]==real_genes$approved_symbol) & any(genes$Gene[i]==real_genes$genes)){
-	
-		genes$Gene[i]=real_genes$approved_symbol[which(real_genes$genes==genes$Gene[i])[1]]
-	}
-}
-
-
+genes = fread( "./inputs/glist.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
 #GPS = data.frame(Locus/signal_name=character(), locus_signal_no=integer(), Gene=character(), distance_to_lead_variant=numeric(),Chromosome=integer(),Start_of_gene=numeric(),End_of_gene=numeric())
 
@@ -99,4 +83,4 @@ GPS <- GPS[,c(1:3,7,4:6)]
 
 any(duplicated(GPS))
 
-write.table(GPS, file="./lmm/all_loci/06_GPS_table/table_for_GPS.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+write.table(GPS, file="./07_GPS/table_for_GPS.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
