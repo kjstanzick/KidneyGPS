@@ -1,8 +1,8 @@
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
 
-cred_var_99 = read.table("./lmm/all_loci/07_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+cred_var_99 = read.table("./05_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
-gtex_files = list.files("./inputs/gtex_sqtl")
+gtex_files = list.files("/stk05236/inputs/gtex_sqtl")
 
 gtex_files = gtex_files[-which(grepl("10rows",gtex_files))]
 
@@ -22,6 +22,7 @@ gtex_files = gtex_files[-c(1,2)]
 #########################################################
 library(data.table)
 
+dir.create("./09_sQTLs/gtex")
 gtex_spalten = c(6,7,8,9,13,14,15,16)
 
 gtex_table = data.frame()
@@ -78,15 +79,19 @@ for (y in 1:length(gtex_files)){
 	
 	gtex_table = merge(gtex_table, cred_var_99, by.x = "rs_id_dbSNP151_GRCh38p7", by.y= "rsid")
 	
-	output = paste("./lmm/all_loci/gtex_sqtl/cred_var_zscore_with_gtex_sqtl_",input_tissue[1],".txt",sep="")
+	output = paste("./09_sQTLs/gtex/cred_var_with_gtex_sqtl_",input_tissue[1],".txt",sep="")
 	
 	write.table(gtex_table, file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+	
+	if (i==1) { gtex_table_all = gtex_table}
+	
+	else{gtex_table_all = rbind(gtex_table_all, gtex_table, make.row.names = FALSE, stringsAsFactors = FALSE)}
 	
 	#write.table(gtex_table, file="./sQTL/all_cred_var_zscore_with_gtex_sqtl.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE, append = TRUE)
 	#print(y)
 }
-			
-			
+
+write.table(gtex_table_all, file="./09_sQTLs/gtex/all_cred_var_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)			
 				
 		
 			

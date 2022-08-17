@@ -51,26 +51,14 @@ for (y in 1:length(gtex_files)){
 	
 	write.table(gtex_table, file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	
+	if (i==1) { gtex_table_all = gtex_table}
+	
+	else{gtex_table_all = rbind(gtex_table_all, gtex_table, make.row.names = FALSE, stringsAsFactors = FALSE)}
+	
 }
 			
-gtex_files = list.files("./08_eQTLs/gtex")
 
-library(data.table)
-
-for (i in 1:length(gtex_files)){
-
-	input_file = paste("./08_eQTLs/gtex/",gtex_files[i],sep="")
-	
-	input = fread(input_file,  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-	
-	if (i==1) { gtex_table = input}
-	
-	else{gtex_table = rbind(gtex_table, input, make.row.names = FALSE, stringsAsFactors = FALSE)}
-	
-	
-}
-
-write.table(gtex_table, file="./08_eQTLs/gtex/all_cred_var_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)		
+write.table(gtex_table_all, file="./08_eQTLs/gtex/all_cred_var_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)		
 				
 		
 			
