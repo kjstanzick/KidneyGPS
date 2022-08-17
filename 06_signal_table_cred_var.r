@@ -1,4 +1,4 @@
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
 
 region_table = read.table("./04_locus_table/locus_table.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
