@@ -26,32 +26,8 @@ all_meta['region.end'] <- as.numeric(Region[,2])+250000
 
 
 ######################
-###genelist with gene correct names
-
-
-genes = fread( "/stk05236/inputs/genes/glist-hg19.tw.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-
-
-real_genes = read.table("/stk05236/inputs/synonym_table.txt", header=TRUE,sep="\t", stringsAsFactors=FALSE, quote="", fill=TRUE)
-
-real_genes = real_genes[which(!is.na(real_genes$approved_symbol)),]
-
-real_genes = real_genes[which(!is.na(real_genes$genes)),]
-
-for(i in 1:nrow(genes)){
-
-	if(!any(genes$Gene[i]==real_genes$approved_symbol) & any(genes$Gene[i]==real_genes$genes)){
-	
-		genes$Gene[i]=real_genes$approved_symbol[which(real_genes$genes==genes$Gene[i])[1]]
-	}
-}
-
-genes_sorted <- genes[order(genes$Chr, genes$Pos1), ]
-write.table(genes_sorted, file="./inputs/glist.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
-
-
-######################
 ###Gene per locus +-250kb 
+genes_sorted = read.table("./inputs/glist.txt", header=TRUE,sep="\t", stringsAsFactors=FALSE, quote="", fill=TRUE)
 
 genes_in_region <- vector(length=nrow(all_meta))
 
