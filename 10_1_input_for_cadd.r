@@ -1,6 +1,6 @@
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS")
 
-cred_99 = read.table("./lmm/all_loci/07_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+cred_99 = read.table("./05_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
 ids=unique(cred_99$region_id)
 
@@ -40,6 +40,7 @@ chr_pos=paste(chr,pos,sep=":")
 
 input_cadd = data.frame(locus_id,signal_id,chr_pos,stringsAsFactors=FALSE)
 
-write.table(input_cadd, file="./lmm/all_loci/cadd_lmm/inputs/input_cadd.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+dir.create("./10_protein_altering/inputs")
+write.table(input_cadd, file="./inputs/input_cadd.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 
 

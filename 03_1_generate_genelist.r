@@ -54,4 +54,4 @@ for(i in 1:nrow(genes)){
 
 genes_sorted <- genes[order(genes$Chr, genes$Pos1), ]
 write.table(genes_sorted, file="./inputs/glist.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
-
+write.table(real_genes, file="./inputs/genes_an_ids.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
