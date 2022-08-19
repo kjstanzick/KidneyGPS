@@ -75,6 +75,59 @@ for (y in 1:length(files)){
 }
 
 }
-write.table(all_cred_95, file="./05_cred_var/all_cred_var_95.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+
+ref=fread("/stk05236/lmm/03_eval/european/metal_eGFR_meta_ea1.TBL.map.annot.gc.gz",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+
+all_cred_95_m=merge(all_cred_95, ref[,c(2,3,6,7,8,15)], by.x="rsid", by.y="RSID", all.x=TRUE, all.y=F, sort=FALSE)
+all_cred_95_m$ea=toupper(all_cred_95_m$ea)
+all_cred_95_m$Allele1=toupper(all_cred_95_m$Allele1)
+all_cred_95_m$Allele2=toupper(all_cred_95_m$Allele2)
+#ea und beta_cond auf eGFR lowering drehen
+not_lowering=which(all_cred_95_m$beta>0)
+
+for(i in not_lowering){
+	all_cred_95_m$beta[i]=(-1)*all_cred_95_m$beta[i]
+	all_cred_95_m$eaf[i]=1-all_cred_95_m$eaf[i]
+	temp_allele=c(all_cred_95_m$Allele1[i],all_cred_95_m$Allele2[i])
+	all_cred_95_m$ea[i]=temp_allele[which(temp_allele!=all_cred_95_m$ea[i])]
+}
+
+#Allele1, Allele2 und Effect uncond auf ea anpassen
+
+for(i in 1:nrow(all_cred_95_m)){
+	if(all_cred_95_m$Allele1[i]!=all_cred_95_m$ea[i]){
+		all_cred_95_m$Effect[i]=(-1)*all_cred_95_m$Effect[i]  
+		all_cred_95_m$Allele1[i] <- paste(all_cred_95_m$Allele1[i],all_cred_95_m$Allele2[i], sep = "")
+		all_cred_95_m$Allele2[i] <- substr(all_cred_95_m$Allele1[i],0,nchar(all_cred_95_m$Allele1[i]) - nchar(all_cred_95_m$Allele2[i]))
+		all_cred_95_m$Allele1[i] <- substr(all_cred_95_m$Allele1[i],nchar(all_cred_95_m$Allele2[i]) + 1, nchar(all_cred_95_m$Allele1[i]))
+	}
+}
+
+all_cred_99_m=merge(all_cred_99, ref[,c(2,3,6,7,8,15)], by.x="rsid", by.y="RSID", all.x=TRUE, all.y=F, sort=FALSE)
+all_cred_99_m$ea=toupper(all_cred_99_m$ea)
+all_cred_99_m$Allele1=toupper(all_cred_99_m$Allele1)
+all_cred_99_m$Allele2=toupper(all_cred_99_m$Allele2)
+#ea und beta_cond auf eGFR lowering drehen
+not_lowering=which(all_cred_99_m$beta>0)
+
+for(i in not_lowering){
+	all_cred_99_m$beta[i]=(-1)*all_cred_99_m$beta[i]
+	all_cred_99_m$eaf[i]=1-all_cred_99_m$eaf[i]
+	temp_allele=c(all_cred_99_m$Allele1[i],all_cred_99_m$Allele2[i])
+	all_cred_99_m$ea[i]=temp_allele[which(temp_allele!=all_cred_99_m$ea[i])]
+}
+
+#Allele1, Allele2 und Effect uncond auf ea anpassen
+
+for(i in 1:nrow(all_cred_99_m)){
+	if(all_cred_99_m$Allele1[i]!=all_cred_99_m$ea[i]){
+		all_cred_99_m$Effect[i]=(-1)*all_cred_99_m$Effect[i]  
+		all_cred_99_m$Allele1[i] <- paste(all_cred_99_m$Allele1[i],all_cred_99_m$Allele2[i], sep = "")
+		all_cred_99_m$Allele2[i] <- substr(all_cred_99_m$Allele1[i],0,nchar(all_cred_99_m$Allele1[i]) - nchar(all_cred_99_m$Allele2[i]))
+		all_cred_99_m$Allele1[i] <- substr(all_cred_99_m$Allele1[i],nchar(all_cred_99_m$Allele2[i]) + 1, nchar(all_cred_99_m$Allele1[i]))
+	}
+}
+
+write.table(all_cred_95_m[,c(1:15)], file="./05_cred_var/all_cred_var_95.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	
-write.table(all_cred_99, file="./05_cred_var/all_cred_var_99.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+write.table(all_cred_99_m[,c(1:15)], file="./05_cred_var/all_cred_var_99.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
