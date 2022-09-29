@@ -47,30 +47,34 @@ for (y in 1:length(gtex_files)){
 	
 	gtex_table = merge(gtex_table, cred_var_99, by.x = "rs_id_dbSNP151_GRCh38p7", by.y= "rsid")
 	
-	output = paste("./08_eQTLs/gtex_/cred_var_with_gtex_",input_tissue[1],".txt",sep="")
+	
+	gtex_table$alt=toupper(gtex_table$alt)
+	gtex_table$ref=toupper(gtex_table$ref)
+
+	for (x in 1:nrow(gtex_table)){
+		if(gtex_table$alt[x]!=gtex_table$ea[x]){
+			gtex_table$slope[x] = (-1)*gtex_table$slope[x]
+			gtex_table$alt[x] <- paste(gtex_table$alt[x],gtex_table$ref[x], sep = "")
+			gtex_table$ref[x] <- substr(gtex_table$alt[x],0,nchar(gtex_table$alt[x]) - nchar(gtex_table$ref[x]))
+			gtex_table$alt[x] <- substr(gtex_table$alt[x],nchar(gtex_table$ref[x]) + 1, nchar(gtex_table$alt[x]))
+		}
+	}
+
+	
+	output = paste("./08_eQTLs/gtex/cred_var_with_gtex_",input_tissue[1],".txt",sep="")
+	
+	gtex_table = gtex_table[,c(1:(ncol(gtex_table)-ncol(cred_var_99)+1))]
 	
 	write.table(gtex_table, file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	
+	if (i==1) { gtex_table_all = gtex_table}
+	
+	else{gtex_table_all = rbind(gtex_table_all, gtex_table, make.row.names = FALSE, stringsAsFactors = FALSE)}
+	
 }
 			
-gtex_files = list.files("./08_eQTLs/gtex")
 
-library(data.table)
-
-for (i in 1:length(gtex_files)){
-
-	input_file = paste("./08_eQTLs/gtex/",gtex_files[i],sep="")
-	
-	input = fread(input_file,  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-	
-	if (i==1) { gtex_table = input}
-	
-	else{gtex_table = rbind(gtex_table, input, make.row.names = FALSE, stringsAsFactors = FALSE)}
-	
-	
-}
-
-write.table(gtex_table, file="./08_eQTLs/gtex/all_cred_var_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)		
+write.table(gtex_table_all, file="./08_eQTLs/gtex/all_cred_var_with_gtex.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)		
 				
 		
 			

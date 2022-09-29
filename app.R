@@ -364,12 +364,57 @@ ui <-
                       
                       tabsetPanel(
                         tabPanel("no PPA-filter",
+                                 br(),
+                                 div(class="filteroptions",
+                                     
+                                       
+                                       selectInput("gps_filter_noppa", label = "Select filter for displayed genes",
+                                                   choices = list("All genes in eGFRcrea loci" = 0, "Likely effector genes" = 1, "Genes with kidney relevance" = 2, "Likely effector genes OR Genes with kidney relevance" = 3, "Likely effector genes with kidney relevance" = 4
+                                                                        ), 
+                                                   selected = 0)
+                                       ,
+                                       
+                                        selectInput("max_cred_set_size_noppa", label = "Select max. size of credible sets", 
+                                             choices = list("No filter for credible set size" = 1, "single variant sets" = 2, "max. 5 variants" = 3), 
+                                             selected = 1)
+                                     
+                                     ),
                                  div(class="overflow",DT::dataTableOutput("GPS"))
                                  ),
                         tabPanel("PPA > 10%",
+                                 br(),
+                                 div(class="filteroptions",
+                                     
+                                     
+                                     selectInput("gps_filter_10ppa", label = "Select filter for displayed genes",
+                                                 choices = list("All genes in eGFRcrea loci" = 0, "Likely effector genes" = 1, "Genes with kidney relevance" = 2, "Likely effector genes OR Genes with kidney relevance" = 3, "Likely effector genes with kidney relevance" = 4
+                                                 ), 
+                                                 selected = 0)
+                                     ,
+                                     
+                                     selectInput("max_cred_set_size_10ppa", label = "Select max. size of credible sets", 
+                                                 choices = list("No filter for credible set size" = 1, "single variant sets" = 2, "max. 5 variants" = 3), 
+                                                 selected = 1)
+                                     
+                                 ),
                                  div(class="overflow",DT::dataTableOutput("GPS_10"))
                         ),
                         tabPanel("PPA > 50%",
+                                 br(),
+                                 div(class="filteroptions",
+                                     
+                                     
+                                     selectInput("gps_filter_50ppa", label = "Select filter for displayed genes",
+                                                 choices = list("All genes in eGFRcrea loci" = 0, "Likely effector genes" = 1, "Genes with kidney relevance" = 2, "Likely effector genes OR Genes with kidney relevance" = 3, "Likely effector genes with kidney relevance" = 4
+                                                 ), 
+                                                 selected = 0)
+                                     ,
+                                     
+                                     selectInput("max_cred_set_size_50ppa", label = "Select max. size of credible sets", 
+                                                 choices = list("No filter for credible set size" = 1, "single variant sets" = 2, "max. 5 variants" = 3), 
+                                                 selected = 1)
+                                     
+                                 ),
                                  div(class="overflow",DT::dataTableOutput("GPS_50"))
                         )
                       )
@@ -639,11 +684,35 @@ server <- function(input, output, session) {
   $(thead).closest('thead').find('th').eq(29).css('background-color', '#ffdb99');
   }"
   
+  
+  eff_noppa_1 <- effector_genes_noppa[which(effector_genes_noppa%in%which(GPS$credible_variants_per_locus_signal==1))]
+  kid_1 <- kidney_genes[which(kidney_genes%in%which(GPS$credible_variants_per_locus_signal==1))]
+  eff_noppa_5 <- effector_genes_noppa[which(effector_genes_noppa%in%which(GPS$credible_variants_per_locus_signal<=5))]
+  kid_5 <- kidney_genes[which(kidney_genes%in%which(GPS$credible_variants_per_locus_signal<=5))]
+  
+  filter_rows_gps <- reactiveVal(
+    if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==1){c(1:nrow(GPS))}
+    if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==1){effector_genes_noppa}
+    if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==1){kidney_genes}
+    if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==1){c(effector_genes_noppa,kidney_genes)}
+    if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==1){effector_genes_noppa[which(effector_genes_noppa%in%kidney_genes)]}
+    if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==2){which(GPS$credible_variants_per_locus_signal==1)}
+    if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==2){eff_noppa_1}
+    if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==2){kid_1}
+    if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==2){c(eff_noppa_1,kid_1)}
+    if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==2){eff_noppa_1[which(eff_noppa_1%in%kid_1)]}
+    if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==3){which(GPS$credible_variants_per_locus_signal<=5)}
+    if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==3){eff_noppa_5}
+    if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==3){kid_5}
+    if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==3){c(eff_noppa_5,kid_5)}
+    if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==3){eff_noppa_5[which(eff_noppa_5%in%kid_5)]}
+  ) 
+  
   output$GPS <- renderDataTable({
     
     
     datatable(
-      GPS_show[,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
+      GPS_show[filter_rows_gps,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
 
         options = list(
                     columnDefs = list(list(className = 'dt-left', targets = "_all"))
@@ -666,11 +735,32 @@ server <- function(input, output, session) {
       container = sketch
     )
   })
+  
+  eff_10ppa_1 <- effector_genes_10ppa[which(effector_genes_10ppa%in%which(GPS$credible_variants_per_locus_signal==1))]
+  eff_10ppa_5 <- effector_genes_10ppa[which(effector_genes_10ppa%in%which(GPS$credible_variants_per_locus_signal==5))]
+  
+  filter_rows_gps_10 <- reactiveVal(
+    if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==1){c(1:nrow(GPS))}
+    if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==1){effector_genes_10ppa}
+    if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==1){kidney_genes}
+    if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==1){c(effector_genes_10ppa,kidney_genes)}
+    if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==1){effector_genes_10ppa[which(effector_genes_10ppa%in%kidney_genes)]}
+    if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==2){which(GPS$credible_variants_per_locus_signal==1)}
+    if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==2){eff_10ppa_1}
+    if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==2){kid_1}
+    if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==2){c(eff_10ppa_1,kid_1)}
+    if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==2){eff_10ppa_1[which(eff_10ppa_1%in%kid_1)]}
+    if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==3){which(GPS$credible_variants_per_locus_signal<=5)}
+    if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==3){eff_10ppa_5}
+    if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==3){kid_5}
+    if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==3){c(eff_10ppa_5,kid_5)}
+    if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==3){eff_10ppa_5[which(eff_10ppa_5%in%kid_5)]}
+  )
   output$GPS_10 <- renderDataTable({
     
     
     datatable(
-      GPS_10_show[,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
+      GPS_10_show[filter_rows_gps_10,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
       
       options = list(
         columnDefs = list(list(className = 'dt-left', targets = "_all"))
@@ -693,11 +783,32 @@ server <- function(input, output, session) {
       container = sketch
     )
   })
+  
+  eff_50ppa_1 <- effector_genes_50ppa[which(effector_genes_50ppa%in%which(GPS$credible_variants_per_locus_signal==1))]
+  eff_50ppa_5 <- effector_genes_50ppa[which(effector_genes_50ppa%in%which(GPS$credible_variants_per_locus_signal==5))]
+  
+  filter_rows_gps_50 <- reactiveVal(
+    if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==1){c(1:nrow(GPS))}
+    if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==1){effector_genes_50ppa}
+    if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==1){kidney_genes}
+    if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==1){c(effector_genes_50ppa,kidney_genes)}
+    if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==1){effector_genes_50ppa[which(effector_genes_50ppa%in%kidney_genes)]}
+    if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==2){which(GPS$credible_variants_per_locus_signal==1)}
+    if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==2){eff_50ppa_1}
+    if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==2){kid_1}
+    if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==2){c(eff_50ppa_1,kid_1)}
+    if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==2){eff_50ppa_1[which(eff_50ppa_1%in%kid_1)]}
+    if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==3){which(GPS$credible_variants_per_locus_signal<=5)}
+    if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==3){eff_50ppa_5}
+    if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==3){kid_5}
+    if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==3){c(eff_50ppa_5,kid_5)}
+    if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==3){eff_50ppa_5[which(eff_50ppa_5%in%kid_5)]}
+  )
   output$GPS_50 <- renderDataTable({
     
     
     datatable(
-      GPS_50_show[,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
+      GPS_50_show[filter_rows_gps_50,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
       
       options = list(
         columnDefs = list(list(className = 'dt-left', targets = "_all"))

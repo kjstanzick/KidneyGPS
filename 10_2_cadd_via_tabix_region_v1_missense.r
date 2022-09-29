@@ -1,6 +1,9 @@
 rm(list = ls(all = TRUE))
 
-setwd("/stk05236/lmm/all_loci/cadd_lmm/")
+
+setwd("/stk05236/clean_GPS/10_protein_altering/")
+
+dir.create("./results")
 
 fileInCredReg = "./inputs/input_cadd.txt"
 
@@ -8,7 +11,7 @@ fileCadd = "/stk05236/cadd/v1.6_GRCh37/whole_genome_SNVs_inclAnno.tsv.gz"
 fileCaddIndex = "/stk05236/cadd/v1.6_GRCh37/whole_genome_SNVs_inclAnno.tsv.gz.tbi"
 blnWriteFullCadd = FALSE
 
-fileOutBase = "./results_no_cutoff/new_cadd16"
+fileOutBase = "./results/new_cadd16"
 	
 ##########################################################################################################################################################################
 

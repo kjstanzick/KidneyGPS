@@ -1,13 +1,13 @@
 library(data.table)
 
-setwd("/stk05236/")
+setwd("/stk05236/clean_GPS/")
 
-meta = fread( "./lmm/all_loci/01_EUR/nea_meta_MHC_plus_european_beta.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+meta = fread( "/stk05236/lmm/all_loci/01_EUR/nea_meta_MHC_plus_european_beta.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
-cys = fread( "./lmm/GWAMA_cys/02_gwama/metal_eGFRcys_meta1.TBL",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+cys = fread( "/stk05236/lmm/GWAMA_cys/02_gwama/metal_eGFRcys_meta1.TBL",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
 #bun = fread( "./lmm/GWAMA_bun/02_gwama/metal_bun_meta1.TBL",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-bun = fread( "./lmm/GWAMA_bun/02_gwama/metal_bun_meta_all1.TBL",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+bun = fread( "/stk05236/lmm/GWAMA_bun/02_gwama/metal_bun_meta_all1.TBL",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 names(cys) [names(cys)=="P-value"] <- "P.value"
 names(bun) [names(bun)=="P-value"] <- "P.value"
 
@@ -126,4 +126,4 @@ meta['nominal_significant_both'] <-nominal_significant_both
 
 
 
-write.table(meta, file="./lmm/all_loci/02_cys_bun/new_meta_MHC_cys_bun_validation.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+write.table(meta, file="./02_cys_bun/new_meta_MHC_cys_bun_validation.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)

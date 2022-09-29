@@ -10,10 +10,6 @@ library(data.table)
 
 ref = fread( "/stk05236/lmm/03_eval/european/metal_eGFR_meta_ea1.TBL.map.annot.gc.gz",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
-ref_cpaid = ref[,c(1,15)]
-
-cred_var_99 = merge (cred_var_99,ref_cpaid, by.x="rsid", by.y="RSID",all.x=TRUE,all.y=FALSE)
-
 
 	
 
@@ -31,7 +27,7 @@ cred_var_99 = merge (cred_var_99,ref_cpaid, by.x="rsid", by.y="RSID",all.x=TRUE,
 #
 #########################################################
 
-dir.create("./08_eQTLs/neputne")
+dir.create("./08_eQTLs/neptune")
 
 neptune_spalten = c(5,6,7,8,10,11,12)
 
@@ -42,7 +38,7 @@ input_tissue = c("glomerular","tubulointerstitial")
 
 for (y in 1:length(neptune_files)){
 	
-	input_file = paste("./inputs/nephQTL/",neptune_files[y],sep="")
+	input_file = paste("/stk05236/inputs/nephQTL/",neptune_files[y],sep="")
 		
 	input = fread(input_file,  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 		
@@ -77,12 +73,23 @@ for (y in 1:length(neptune_files)){
 	
 	neptune_table = merge(neptune_table,cred_var_99, by.x = "cpaid", by.y="MarkerName", all.x=TRUE, all.y=FALSE)
 	
+	### correct to eGFRcrea lowering allele
+	neptune_table$ALT=toupper(neptune_table$ALT)
+	neptune_table$REF=toupper(neptune_table$REF)
+	for (x in 1:nrow(neptune_table)){
+		if(neptune_table$ALT[x]!=neptune_table$ea[x]){
+			neptune_table$BETA[x] = (-1)*neptune_table$BETA[x]
+			neptune_table$ALT[x] <- paste(neptune_table$ALT[x],neptune_table$REF[x], sep = "")
+			neptune_table$REF[x] <- substr(neptune_table$ALT[x],0,nchar(neptune_table$ALT[x]) - nchar(neptune_table$REF[x]))
+			neptune_table$ALT[x] <- substr(neptune_table$ALT[x],nchar(neptune_table$REF[x]) + 1, nchar(neptune_table$ALT[x]))
+		}
+	}
+	
 	output=paste("./08_eQTLs/neptune/cred_var_with_nephQTL_",tissue[y],".txt",sep="")
 	
-	write.table(neptune_table, file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+	write.table(neptune_table[,c(names(neptune_table)[c(1:(ncol(neptune_table)-ncol(cred_var_99)+1))],'rsid')], file=output, sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	
 	#write.table(neptune_table, file="./eQTL/neptune/all_cred_var_with_nephQTL.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE, append=TRUE)
 }
 			
-
 

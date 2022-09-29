@@ -183,6 +183,13 @@ GPS_50_show['decline effect']=GPS$decline_effect
 GPS_50_show['drugable']=GPS$drugable
 GPS_50_show['in enriched pathway']=GPS$enriched_pathway
 
+# prepare filter options
+effector_genes_noppa = which(GPS$stop.gained.stop.lost.non.synonymus!=0|GPS$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS$NEPTUNE_glomerulus!=0|GPS$NEPTUNE_tubulointerstitium!=0|GPS$GTEX_eQTL_kidney_tissue!=0|GPS$GTEX_sQTL_kidney_tissue!=0)
+effector_genes_10ppa = which(GPS_10$stop.gained.stop.lost.non.synonymus!=0|GPS_10$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS_10$NEPTUNE_glomerulus!=0|GPS_10$NEPTUNE_tubulointerstitium!=0|GPS_10$GTEX_eQTL_kidney_tissue!=0|GPS_10$GTEX_sQTL_kidney_tissue!=0)
+effector_genes_50ppa = which(GPS_50$stop.gained.stop.lost.non.synonymus!=0|GPS_50$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS_50$NEPTUNE_glomerulus!=0|GPS_50$NEPTUNE_tubulointerstitium!=0|GPS_50$GTEX_eQTL_kidney_tissue!=0|GPS_50$GTEX_sQTL_kidney_tissue!=0)
+kidney_genes = which(GPS$MGI_mouse_kidney_phenotyp!=0|GPS$OMIM_human_kidney_phenotype!=0)
+
+
 #format association tables
 all_sig=merge(all_sig,indepX[,c(17,24)], by="Indep.500k.5e8.aLociTag",all.x=T, all.y=F, sort = F )
 all_sig=all_sig[,c(2:17,1,18:24)]
