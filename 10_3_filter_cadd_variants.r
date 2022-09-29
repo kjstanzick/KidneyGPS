@@ -42,14 +42,14 @@ cadd_new_right_SNPs = cadd_new_right_SNPs[which(!is.na(cadd_new_right_SNPs$GeneN
 ########
 
 gen_ref = fread( "./inputs/glist.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-
+real_genes = fread( "./inputs/genes_an_ids.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 in_gene =c ()
 
 for (i in 1:nrow(cadd_new_right_SNPs)){
 
-	if(!any(cadd_new_right_SNPs$GeneName[i]==real_genes$approved_symbol) & any(cadd_new_right_SNPs$GeneName[i]==real_genes$genes)){
+	if(!any(cadd_new_right_SNPs$GeneName[i]==real_genes$Approved.symbol) & any(cadd_new_right_SNPs$GeneName[i]==real_genes$genes)){
 	
-		cadd_new_right_SNPs$GeneName[i]=real_genes$approved_symbol[which(real_genes$genes==cadd_new_right_SNPs$GeneName[i])[1]]
+		cadd_new_right_SNPs$GeneName[i]=real_genes$Approved.symbol[which(real_genes$genes==cadd_new_right_SNPs$GeneName[i])[1]]
 	}
 
 	if(any(gen_ref$Chr == cadd_new_right_SNPs[i,1] & gen_ref$Pos1 <= cadd_new_right_SNPs$Pos[i] & gen_ref$Pos2 >= cadd_new_right_SNPs$Pos[i] & gen_ref$Gene == cadd_new_right_SNPs$GeneName[i])){

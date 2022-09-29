@@ -31,20 +31,7 @@ dir.create("./05_cred_var/cred_var_by_id")
 path_to_cond = "/stk05236/credible/inputs_lmm"
 files = list.files(path_to_cond)
 
-known = c()
 
-for (i in 1:length(files)){
-
-	a = unlist(strsplit(files[i],"_"))
-	
-	if(unlist(strsplit(a[5],split=""))[1]=="k") {
-		known[i] = TRUE
-	}else{
-		known[i] = FALSE
-	}
-}
-	
-files = files[which(known)]
 
 
 for (y in 1:length(files)){ 

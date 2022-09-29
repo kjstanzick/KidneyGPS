@@ -74,11 +74,11 @@ for (y in 1:length(files)){
 	
 }
 
-}
+
 
 ref=fread("/stk05236/lmm/03_eval/european/metal_eGFR_meta_ea1.TBL.map.annot.gc.gz",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
-all_cred_95_m=merge(all_cred_95, ref[,c(2,3,6,7,8,15)], by.x="rsid", by.y="RSID", all.x=TRUE, all.y=F, sort=FALSE)
+all_cred_95_m=merge(all_cred_95, ref[,c(1,2,3,6,7,8,15)], by.x="rsid", by.y="RSID", all.x=TRUE, all.y=F,  sort=FALSE)
 all_cred_95_m$ea=toupper(all_cred_95_m$ea)
 all_cred_95_m$Allele1=toupper(all_cred_95_m$Allele1)
 all_cred_95_m$Allele2=toupper(all_cred_95_m$Allele2)
@@ -103,7 +103,7 @@ for(i in 1:nrow(all_cred_95_m)){
 	}
 }
 
-all_cred_99_m=merge(all_cred_99, ref[,c(2,3,6,7,8,15)], by.x="rsid", by.y="RSID", all.x=TRUE, all.y=F, sort=FALSE)
+all_cred_99_m=merge(all_cred_99, ref[,c(1,2,3,6,7,8,15)], by.x="rsid", by.y="RSID", all.x=TRUE, all.y=F, sort=FALSE)
 all_cred_99_m$ea=toupper(all_cred_99_m$ea)
 all_cred_99_m$Allele1=toupper(all_cred_99_m$Allele1)
 all_cred_99_m$Allele2=toupper(all_cred_99_m$Allele2)
@@ -128,6 +128,9 @@ for(i in 1:nrow(all_cred_99_m)){
 	}
 }
 
-write.table(all_cred_95_m[,c(1:15)], file="./05_cred_var/all_cred_var_95.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+names(all_cred_95_m)[c(19:21)]=paste(names(all_cred_95_m[c(19:21)]),".unconditioned",sep="")
+names(all_cred_99_m)[c(19:21)]=paste(names(all_cred_99_m[c(19:21)]),".unconditioned",sep="")
+
+write.table(all_cred_95_m, file="./05_cred_var/all_cred_var_95.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
 	
-write.table(all_cred_99_m[,c(1:15)], file="./05_cred_var/all_cred_var_99.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+write.table(all_cred_99_m, file="./05_cred_var/all_cred_var_99.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)

@@ -1,7 +1,7 @@
 rm(list = ls(all = TRUE))
 
 
-setwd("/stk05236/clear_GPS/10_protein_altering/")
+setwd("/stk05236/clean_GPS/10_protein_altering/")
 
 dir.create("./results")
 

@@ -44,6 +44,8 @@ real_genes = real_genes[which(!is.na(real_genes$Approved.symbol)),]
 
 real_genes = real_genes[which(!is.na(real_genes$genes)),]
 
+real_genes =real_genes[which(real_genes$genes!="NA"),]
+
 for(i in 1:nrow(genes)){
   
   if(!any(genes$Gene[i]==real_genes$Approved.symbol) & any(genes$Gene[i]==real_genes$genes)){
