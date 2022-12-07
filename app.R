@@ -1,5 +1,5 @@
-
-source("packages.r")
+rm(list = ls(all = TRUE))
+source("data/packages.r")
 load("data/workspace.RData")
 
 ##########################
@@ -19,13 +19,13 @@ ui <-
                                         });
                           ')
     ),
-  #useShinyjs(),
   
+  title="KidneyGPS",
   tags$h1(list(tags$img(id="kidney_image",
                    height="50px",
                    width="50px",
                    src= "kidney-g8a69f0709_1920.png"),
-          tags$em("Kidney "), tags$b("G"),"ene",tags$b("P"),"rioriti",tags$b("S"),"ation - ",tags$b("KidneyGPS"))),
+          HTML(paste(tags$em("Kidney "), tags$b("G"),"ene",tags$b("P"),"rioriti",tags$b("S"),"ation - ",tags$b("KidneyGPS"),sep="")))),
   tags$p(list("This platform summarizes information on each of 5906 genes overlapping the 424 loci identified for ",
               tags$abbr(title="estimated glomerular filtration rate from serum creatinine",tags$b("eGFRcrea")), " based on a ",tags$abbr(title="genome-wide association studies","GWAS")," meta-analysis of ", tags$a(href="https://www.ukbiobank.ac.uk/", target="_blank", "UK Biobank data"), "and ", tags$a(href="https://ckdgen.imbi.uni-freiburg.de", target="_blank", "CKDGen consortium"), "data", tags$b("(n=1,201,909)"), 
          tags$strong(tags$a(href="https://www.nature.com/articles/s41467-021-24491-0#Sec31", target="_blank", "[Stanzick et al. Nat. Commun. 2021]")),
@@ -36,18 +36,11 @@ ui <-
   
    
   
-  #tags$br(),
+  ,
   
-  navbarPage(tags$p(tags$b("G"),"ene",tags$b("P"),"rioriti",tags$b("S"),"ation"),
+  navbarPage(tags$p(HTML(paste(tags$b("G"),"ene",tags$b("P"),"rioriti",tags$b("S"),"ation", sep=""))),
              
              
-             
-             # tabPanel("Home",
-             #          tags$p("This platform summarizes information on genes and variants of ",tags$b("eGFRcrea"), " associated loci. Origin of this association is a GWAS meta-analysis of ", tags$a(href="https://www.ukbiobank.ac.uk/", "UK Biobank data"), "and ", tags$a(href="https://ckdgen.imbi.uni-freiburg.de", "CKDGen consortium"), "data", tags$b("(n=1,201,909)"), 
-             #                 ". Loci were selected based on an association p-value treshhold of P<5E-8. In total 424 eGFRcrea asscoiated loci and 634 independent association signals were found."),
-             #          tags$p("The displayed data is based on published work, that can be found ", tags$strong(tags$a(href="https://www.nature.com/articles/s41467-021-24491-0#Sec31", "here."))),
-             #          
-             #          ),
              
              tabPanel("Genes",
                       
@@ -113,14 +106,16 @@ ui <-
                            tags$h4("Specification of functional evidence for the searched gene (s) displayed in GPS table:",actionButton(inputId="question_GPS_gene",label="?",class="question")),
                            
                            
-                           div(class="CADD",checkboxGroupInput(inputId="columns1", label=span("Gene contains credible variant that is protein-relevant with high predicted deleteriousness (CADD-Phred ",HTML("<span>&#8805;</span>"),"15)"),  selected = c(11:13),
-                                                               inline = FALSE, width = NULL, choiceNames = c("stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other functional consequence"), choiceValues = c(11:13))),
+                           div(class="CADD",checkboxGroupInput(inputId="columns1", label=span("Gene contains credible variant that is protein-relevant"),  selected = c(11:13),
+                                                               inline = FALSE, width = NULL, choiceNames = c("stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other functional consequence with high predicted deleteriousness (CADD-Phred \u2265 15)"), choiceValues = c(11:13))),
                            
                            div(class="eqtl",checkboxGroupInput(inputId="columns2", label="Gene maps to credible variant that modulates gene expression (eQTLs) or splicing (sQTLs), FDR < 5%",  selected = c(14:19,22),
                                                                inline = FALSE, width = NULL, choiceNames = c("eQTL in glomerular tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitial tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex tissue (GTEx)","eQTL in other tissue (GTEx)","sQTL in kidney cortex tissue (GTEx)","sQTL in other tissue (GTEx)", "Colocalization of gene-expression signal and eGFRcrea signal (NEPTUNE)"), choiceValues = c(14:19,22))),
                            
                            div(class="pheno",checkboxGroupInput(inputId="columns3", label="Gene has known kidney phenotype in mouse or human:",  selected = c(20,21),
-                                                                inline = FALSE, width = NULL, choiceNames = c("mouse (Mouse Genome Informatics, MGI)","human (online mendelian inheritance in man, OMIM, or Groopman et al. [N.Engl.J.Med,2019])"), choiceValues = c(20,21))),
+                                                                inline = FALSE, width = NULL, choiceNames = c("mouse (Mouse Genome Informatics, MGI)","human (online mendelian inheritance in man, OMIM, Groopman et al. [N.Engl.J.Med,2019], or Wopperer et al. [Kidney Int.,2022])"), choiceValues = c(20,21))),
+                           div(class="drug",checkboxGroupInput(inputId="columns4", label="Gene is known as drug target or to show a drug interaction:",  selected = c(25),
+                                                                inline = FALSE, width = NULL, choiceNames = c("Drug information"), choiceValues = c(25))),
                            tags$br(),
                            tags$h4("Specification of additional information",actionButton(inputId="question_details_gene",label="?",class="question")),
                            
@@ -166,7 +161,7 @@ ui <-
                             #textOutput("extras_gene"),
                             
                             
-                            shinyjs::hidden(div(id="div_cadd_gene",tags$h4(span("Protein-relevant variants with predicted deleteriousness (CADD-Phred",HTML("<span>&#8805;</span>") ,"15):"), class="Output_header"),
+                            shinyjs::hidden(div(id="div_cadd_gene",tags$h4(span("Protein-relevant variants with predicted deleteriousness:"), class="Output_header"),
                                                 textOutput("CADD_gene_text"),
                                                 br(),
                                                 DT::dataTableOutput("CADD_gene"),
@@ -210,6 +205,11 @@ ui <-
                                                 textOutput("omim_gene_text"),
                                                 br(),
                                                 DT::dataTableOutput("omim_gene"),
+                                                hr())),
+                            shinyjs::hidden(div(id="div_drug_gene",tags$h4("Drugability or Interaction:", class="Output_header"),
+                                                textOutput("drug_gene_text"),
+                                                br(),
+                                                DT::dataTableOutput("drug_gene"),
                                                 hr())),
                             shinyjs::hidden(div(id="div_summary",tags$h4("Summary of loci and signals containing the searched gene(s):", class="Output_header"),
                                                 textOutput("summary_text"),
@@ -322,7 +322,7 @@ ui <-
                             textOutput("namecheck2"),
                             DT::dataTableOutput("cred_var"),
                             tags$hr()),
-                            shinyjs::hidden(div(id="div_cadd_snp",tags$h4(span("Protein-relevance and predicted deleteriousness (CADD-Phred",HTML("<span>&#8805;</span>") ,"15):"), class="Output_header"),
+                            shinyjs::hidden(div(id="div_cadd_snp",tags$h4(span("Protein-relevance and predicted deleteriousness:"), class="Output_header"),
                                                 #textOutput("extras"),
                                                 textOutput("CADD_text"),
                                                 DT::dataTableOutput("CADD"),
@@ -462,65 +462,113 @@ ui <-
              ),
              
 						tabPanel("Documentation & Help",
-						         h3("Data Sources:"),
-						         br(),
-						         h4("Association with eGFRcrea:"),
-						         p("Selection of genetic loci and therefore the genes within those loci, which are presented here, is based on a ",tags$abbr(title="genome-wide association studies","GWAS")," meta-analysis for eGFRcrea of ", tags$a(href="https://www.ukbiobank.ac.uk/", target="_blank", "UK Biobank data"), "and ", tags$a(href="https://ckdgen.imbi.uni-freiburg.de", target="_blank", "CKDGen consortium"), "data", tags$b("(n=1,201,909)."),"
-						           Detailed information on the selection process can be found ",tags$a(href="https://www.nature.com/articles/s41467-021-24491-0", target="_blank", "here.")," A GWAS-meta-analysis of the same data restricted to European-ancestry (n=1,004,040) was used to identify independent
-						           association signals and to calculate posterior probabilities of association (PPA) for all variants for each signal. The 99% credible variant sets of each signal contain the variants with the highest PPA with the sum of the PPA of all credible variants for a signal being larger than 99%. 
-						           These are the variants with the highest probability to be causal for the association signal under the assumption that there is only one causal variant per association signal and that this variant is included in the analysis."),
-						         br(),
-						         h4("Association with other phenotypes:"),
-						         p("GWAS meta-analyses were also performed for the other kidney function biomarkers eGFR estimated from serum cystatin C (eGFRcys, n=460,826) and blood urea nitrogen (BUN, n=852,678). The information if the locus lead variant (variant with the smallest association p-value in a locus) is also nominal significantly associated with these additional phenotypes can be found in each GPS table.
-						           Summary statistics of these analyses can be downloaded ", tags$a(href="https://www.uni-regensburg.de/medizin/epidemiologie-praeventivmedizin/genetische-epidemiologie/gwas-summary-statistics/index.html", target="_blank", "here.")),
-						         br(),
-						         h4("CADD:"),
-						         p("The combined annotation dependend depletion (CADD) score is a measurement of the deleteriousness of a genetic variant. By integrating multiple annotations, it contrasts variants that survived natural selection with simulated mutations. 
-						           CADD evaluated ~8.6 billion SNPs and the CADD-Phred Score used on this website represents the rank of variant compared to all annotated variants. Therefore, the CADD-Phred Score", HTML("<span>&#8805;</span>"),"15 cut-off restricts our analysis to the 3.2% most deleterious variants.
-						           Further, the analysis is restricted to variants within the affected gene as overlap with eQTLs and sQTLs should be minimized to avoid overscoring particular genes and variants. For additional information regarding CADD, please vistit the ", tags$a(href="https://cadd.gs.washington.edu/info", target="_blank", "CADD website.")),
-						         p("Used version: v1.6 [2020-03-23]"),
-						         br(),
-						         h4("eQTL and sQTL data:"),
-						         p("All credible variants were searched in expression quantitative trait loci (eQTL) databases. Three sources for eQTL data were used:"),
-						         h5("NEPTUNE",style="font-weight:bold"),
-						         p("eQTL data from the NEPTUNE study includes ",tags$em("cis-"),"eQTLs, which are variants that influence expression of genes within a 1Mb region centred around the variant. The association between a variant and the expression of a gene was deemed to be significant if the false dicovery rate (FDR) was <0.05.
-						           This eQTL data was obtained from glomerular and tubulo-interstitial tissue. Further information about the NEPTUNE study can be found on the webpage of the ", tags$a(href="https://www.neptune-study.org/about", target="_blank", "study"), " and on the "
-						           , tags$a(href="http://nephqtl.org/about", target="_blank", "NephQTL browser.")),
-						         p("Version from [2017-09-25]"),
-						         h5("Susztaklab (Sheng et al)", style="font-weight:bold"),
-						         p("The Susztaklab also provides comprehensive kidney omics data. We integrated the eQTL data from glomerular und tubulo-interstitial tissue published by Sheng et al.", tags$a(href="https://www.nature.com/articles/s41588-021-00909-9", target="_blank", " (Sheng, X. et al., Nature Genetics, 2021).")),
-						         h5("GTEx", style="font-weight:bold"),
-						         p("In contrast to the other two eQTL sources, the GTEx project is not restricted to kidney tissue. Furthermore, additional splicing altering variants (sQTLs) were investigated. Thus, the here integrated GTEx data includes ",tags$em("cis-"),"eQTL and -sQTL information from 48 different tissues with a mapping window of 1Mb up- and downstream of the transcription start site.
-						            Further information about GTEx can be found ",tags$a(href="https://www.gtexportal.org/home/", target="_blank", "here.")),
-						         p("Used version: GTEx Release v7 [2017-09-05]"),
-						         br(),
-						         h4("Mouse phenotypes:"),
-						         p("Information on genes with kidney-relevant phenotypes in mice origin from the Mouse Genome Informatics database (MGI). This includes all phenotypes subordinate to \"abnormal kidney morphology\" (MP:0002135) and \"abnormal kidney physiology\" (MP:0002136).
-						            Further information how this data was collected can be found on the ", tags$a(href="http://www.informatics.jax.org/", target="_blank", "MGI webpage.")),
-						         p("Version from [2020-06-03]"),
-						         br(),
-						         h4("Human phenotypes:"),
-						         p("We used two sources to identify genes causing genetic disorders with kidney phenotype in human:"),
-						         h5("OMIM", style="font-weight:bold"),
-						         p("The Online Mendelian Inheritance in Man (OMIM) database was queried for phenotype entries subordinate to the clinical synopsis class \"kidney\". Diseases with \"kidney\"-phenotype entries being: \"normal kidneys\", \"normal renal ultrasound at ages 4 and 7 (in two family)\", \"no kidney disease\", \"no renal disease; normal renal function\", \"normal renal function; no kidney disease\" and \"no renal findings\" were manually excluded.
-						           Be aware that OMIM entries missing a clinical synopsis entry are not included in kidneyGPS regardless of a potential kidney involvement. Further information on the diseases can be found at the ",tags$a(href="https://www.omim.org/", target="_blank", "OMIM webpage.")),
-						         p("Version from [2020-08-07]"),
-						         h5("Groopman et al.", style="font-weight:bold"),
-						         p(tags$a(href="(http://www.columbiamedicine.org/divisions/gharavi/files/Kidney_Gene_List_625.xlsx", target="_blank","A list of 625 genes "), "associated with Mendelian forms of kidney and genitourinary disease was published by Groopman et al. in 2019 in the New England Journal of Medicine. The original article \"Diagnostic Utility of Exome Sequencing for Kidney Disease\" can be found ",tags$a(href="https://www.nejm.org/doi/10.1056/NEJMoa1806891", target="_blank", "here.")," 
-						           Please notice that not all 625 genes are included in any eGFRcrea locus and thus cannot be found in kidneyGPS."),
-						         tags$hr(),
+						         
+						         navlistPanel(
+						         tabPanel("Release history",
+						                h3("Release history"),
+						                p("KidneyGPS 1.2.0 [2022-11] - integration of drug target and interaction information for all genes from Therapeutic Target Database"),
+						                p("KidneyGPS 1.2.0 [2022-10] - integration of ADTKD genes, DM-status interaction and eGFRcrea decline association; loosening of the CADD-Phred cutoff for protein-altering variants with a clear functional cosequence"),
+						                p("KidneyGPS 1.1.2 [2022-06] - small layout changes"),
+						                p("KidneyGPS 1.1.1 [2022-04] - minor fixes"),
+						                p("KidneyGPS 1.1.0 [2022-03]- integration of eQTL data from Susztaklab"),
+						                p("first publication KidneyGPS 1.0 [2022-03]"),
+						                hr()
+						                ),
+						                
+						         tabPanel("Data Sources",
+						                h3("Data Sources:"),
+						                br(),
+						                h4("Association with eGFRcrea:"),
+						                p("Genetic loci and genes within these loci are based on a ",tags$abbr(title="genome-wide association studies","GWAS")," meta-analysis for eGFRcrea of ", tags$a(href="https://www.ukbiobank.ac.uk/", target="_blank", "UK Biobank data"), "and ", tags$a(href="https://ckdgen.imbi.uni-freiburg.de", target="_blank", "CKDGen consortium"), "data", tags$b("(n=1,201,909)."),"
+						                Detailed information on the selection process can be found ",tags$a(href="https://www.nature.com/articles/s41467-021-24491-0", target="_blank", "here.")," A GWAS-meta-analysis restricted to individuals of European-ancestry (n=1,004,040) was used to identify independent
+						                association signals and to calculate posterior probabilities of association (PPA) for all variants in each signal. The 99% credible variant set of variants in each signal contains with a 99% % probability the causal variant, under the assumption that there is one causal variant per association signal and that this variant is included in the analysis."),
+						                br(),
+						                h4("Association with other phenotypes:"),
+						                h5("eGFRcys & BUN",style="font-weight:bold"),
+						                p("GWAS meta-analyses were also performed for eGFR estimated from serum cystatin C (eGFRcys, n=460,826) and blood urea nitrogen (BUN, n=852,678). KidneyGPS provides the information if the locus lead variant (variant with the smallest association p-value in a locus) is nominal significantly associated with eGFRcys or BUN with concordant effect directions.
+						                Summary statistics of these analyses can be downloaded ", tags$a(href="https://www.uni-regensburg.de/medizin/epidemiologie-praeventivmedizin/genetische-epidemiologie/gwas-summary-statistics/index.html", target="_blank", "here.")),
+						                h5("Interaction with diabetes status",style="font-weight:bold"),
+						                p(list("Diabetes mellitus (DM) is a risk factor for kidney failure. A GWAS meta-analysis for eGFRcrea conducted separatly for individuals with or without DM ( ",HTML(paste("n",tags$sub("DM"),sep="")),"=178,691,", HTML(paste("n",tags$sub("noDM"),sep="")),"=1,296,113) by Winkler et al. identified 7 loci with significant DM/noDM difference.
+						                5 of these locis showed a more pronounced effect on eGFR in DM versus noDM (DM>NoDM), one locus had a DM-only effect and one locus a noDM-only effect. Further information on the impact of diabetes status on the genetic eGFRcrea effect sizes can be found in the original publication: ",
+						                       tags$a(href="https://www.nature.com/articles/s42003-022-03448-z", target="_blank", "Winkler et al. Commun. Biol. 2022"), ". Variants identified by this study were mapped to eGFRcrea signals in KidneyGPS via overlap, or strong correlation with the signal index variant identified by Stanzick et al."
+						                )),
+						                h5("Association with eGFRcrea decline",style="font-weight:bold"),
+						                p(list("Progressive eGFR-decline can lead to kidney failure, necessitating dialysis or transplantation. Hence, ",
+						                       tags$a(href="https://www.kidney-international.org/article/S0085-2538(22)00454-9/fulltext", target="_blank", "Gorski et al. [Kidney Int. 2022]"),
+						                       " searched for genetic association with annual eGFR-decline using 62 longitudinal studies in 343,339 individuals. Associated variants were identified by three approaches: First, a genome-wide screen on eGFR-decline unadjusted for eGFR-baseline revealed two significantly (",
+						                       HTML(paste("(P",tags$sub("decline"),sep="")),
+						                       HTML(paste("&#60;", " 5 x 10",tags$sup('-8'),sep="")),") associated variants within the ",
+						                       tags$em("UMOD-PDILT"),
+						                       " locus.Second, a candidate approach among the 263 lead variants for eGFRcrea from ",
+						                       tags$a(href="https://www.nature.com/articles/s41588-019-0407-x", target="_blank", "Wuttke et al. [Nat. Genet. 2019]"),
+						                       " identified two associated variants (Bonferroni corrected: ",
+						                       HTML(paste("P",tags$sub("decline"),sep="")),
+						                       HTML(paste("&#60;", " 0.05/263 = 1.90 x 10",tags$sup('-4'),sep="")),
+						                       "). Third, a genome-wide screen for association with eGFR-decline adjusted for eGFRcrea at baseline revealed five variants, that were also associated (Bonferroni corrected: ",
+						                       HTML(paste("P",tags$sub("decline"),sep="")),
+						                       HTML(paste("&#60;" ," 0.05/12 = 4.17 x 10",tags$sup("-3"),sep="")),
+						                       ") with eGFRcrea decline unadjusted. The identified C15orf54 signal maps to a second signal in this locus and is thus not included in our GPS. 
+						                       We integrated these identified variants, when they resided in eGFRcrea signal or showed strong correlation with the signal index variant identified by Stanzick et al."
+						                       
+						                )),
+						                br(),
+						                h4("CADD:"),
+						                p("The combined annotation dependend depletion (CADD) score is a measurement of the deleteriousness of a genetic variant. By integrating multiple annotations, it contrasts variants that survived natural selection with simulated mutations. 
+						                CADD evaluated ~8.6 billion SNPs and the CADD-Phred Score used on this website represents the rank of variant compared to all annotated variants. Variants with the coding and non-coding consequences \"stop-gained\", \"stop-lost\", \"missense\", \"canonical splice\", \"noncoding change\", \"synonymous\" or \"splice-site\" are not restricted regarding their CADD-Phred Score. 
+						                Variants with \"other\" consequences are filtered for a CADD-Phred Score", HTML("<span>&#8805;</span>"),"15, which restricts our analysis to the 3.2% most deleterious variants.
+						                Further, the analysis is restricted to variants within the affected gene as overlap with eQTLs and sQTLs should be minimized to avoid overscoring particular genes and variants. For additional information regarding CADD, please vistit the ", tags$a(href="https://cadd.gs.washington.edu/info", target="_blank", "CADD website.")),
+						                p("Used version: v1.6 [2020-03-23]"),
+						                br(),
+						                h4("eQTL and sQTL data:"),
+						                p("All credible variants were searched in expression quantitative trait loci (eQTL) databases. Three sources for eQTL data were used:"),
+						                h5("NEPTUNE",style="font-weight:bold"),
+						                p("eQTL data from the NEPTUNE study includes ",tags$em("cis-"),"eQTLs, which are variants that influence expression of genes within a 1Mb region centred around the variant. The association between a variant and the expression of a gene was deemed to be significant if the false dicovery rate (FDR) was <0.05.
+						                This eQTL data was obtained from glomerular and tubulo-interstitial tissue. Further information about the NEPTUNE study can be found on the webpage of the ", tags$a(href="https://www.neptune-study.org/about", target="_blank", "study"), " and on the "
+						                  , tags$a(href="http://nephqtl.org/about", target="_blank", "NephQTL browser.")),
+						                p("Version from [2017-09-25]"),
+						                h5("Susztaklab (Sheng et al)", style="font-weight:bold"),
+						                p("The Susztaklab also provides comprehensive kidney omics data. We integrated the eQTL data from glomerular und tubulo-interstitial tissue published by Sheng et al.", tags$a(href="https://www.nature.com/articles/s41588-021-00909-9", target="_blank", " (Sheng, X. et al., Nature Genetics, 2021).")),
+						                h5("GTEx", style="font-weight:bold"),
+						                p("In contrast to the other two eQTL sources, the GTEx project is not restricted to kidney tissue. Furthermore, additional splicing altering variants (sQTLs) were investigated. Thus, the here integrated GTEx data includes ",tags$em("cis-"),"eQTL and -sQTL information from 48 different tissues with a mapping window of 1Mb up- and downstream of the transcription start site.
+						                Further information about GTEx can be found ",tags$a(href="https://www.gtexportal.org/home/", target="_blank", "here.")),
+						                p("Used version: GTEx Release v7 [2017-09-05]"),
+						                br(),
+						                h4("Mouse phenotypes:"),
+						                p("Information on genes with kidney-relevant phenotypes in mice origin from the Mouse Genome Informatics database (MGI). This includes all phenotypes subordinate to \"abnormal kidney morphology\" (MP:0002135) and \"abnormal kidney physiology\" (MP:0002136).
+						                Further information how this data was collected can be found on the ", tags$a(href="http://www.informatics.jax.org/", target="_blank", "MGI webpage.")),
+						                p("Version from [2020-06-03]"),
+						                br(),
+						                h4("Human phenotypes:"),
+						                p("We used three sources to identify genes causing genetic disorders with kidney phenotype in human:"),
+						                h5("OMIM", style="font-weight:bold"),
+						                p("The Online Mendelian Inheritance in Man (OMIM) database was queried for phenotype entries subordinate to the clinical synopsis class \"kidney\". Diseases with \"kidney\"-phenotype entries being: \"normal kidneys\", \"normal renal ultrasound at ages 4 and 7 (in two family)\", \"no kidney disease\", \"no renal disease; normal renal function\", \"normal renal function; no kidney disease\" and \"no renal findings\" were manually excluded.
+						                Be aware that OMIM entries missing a clinical synopsis entry are not included in kidneyGPS regardless of a potential kidney involvement. Further information on the diseases can be found at the ",tags$a(href="https://www.omim.org/", target="_blank", "OMIM webpage.")),
+						                p("Version from [2020-08-07]"),
+						                h5("Groopman et al.", style="font-weight:bold"),
+						                p(tags$a(href="http://www.columbiamedicine.org/divisions/gharavi/files/Kidney_Gene_List_625.xlsx", target="_blank","A list of 625 genes "), "associated with Mendelian forms of kidney and genitourinary disease was published by Groopman et al. in 2019 in the New England Journal of Medicine. The original article \"Diagnostic Utility of Exome Sequencing for Kidney Disease\" can be found ",tags$a(href="https://www.nejm.org/doi/10.1056/NEJMoa1806891", target="_blank", "here.")," 
+						                Please notice that not all 625 genes are included in any eGFRcrea locus and thus cannot be found in kidneyGPS."),
+						                h5("Wopperer al.", style="font-weight:bold"),
+						                p("Autosomal Dominant Tubulointerstitial Kidney Disease (ADTKD) is a heriditary kidney-disease normaly caused by mutations in at least one of five genes (", tags$em("UMOD, MUC1, REN, HNF1B, SEC61A1"), ") and leads to kidney failure in midadulthood. However, Wopperer et al. identified 27 putative novel ADTKD genes, of which 9 are located within an eGFRcrea associated locus. 
+						                Disease type of known ADTKD genes is stated as \"confirmed ADTKD\" in the \"Kidney phenotypes in human\" section and as \"putative ADTKD\" for the novel genes. The original publication can be found ", tags$a(href="https://www.kidney-international.org/article/S0085-2538(22)00384-2/fulltext", target="_blank","here.")),
+						                br(),
+						                h4("Drug information:"),
+						                p("Information on weather a gene, it's mRNA or the respective protein is a known drug target or interacts with a drug (e.g. as transporter) was downloaded from the Thearepeutic Target Database  (TTD). \"Highest drug status\" and \"disease/indication\" refer to the drug and not necessarily to the shown target-drug pair. 
+						                  Additional information on TTD can be found in the related publication from ", tags$a(href="https://doi.org/10.1093/nar/gkab953", target="_blank","Ying Zhou et al.")),
+						                hr()
+						         
+						         ),
+						         tabPanel("Citation",
 						         h3("Citation"),
-						         p("We encourage the use and publication of results generated from these data. We request that if you use data from KidneyGPS browser cite that you cite our paper, \"KidneyGPS: an easily accessible web application to prioritize kidney function genes and variants based on evidence from genome-wide association studies\" currently published in preprint and and the original data sources listed on this page."),
-						         tags$hr(),
-						         h3("Contact"),
-						         p("If you have any questions not answered by this page, please contact: Kira Stanzick ", tags$a(href="mailto:kira-julia.stanzick@klinik.uni-regensburg.de", "(kira-julia.stanzick@klinik.uni-regensburg.de)") ),
-						         tags$hr(),
-						         h3("Release history"),
-						         p("KidneyGPS 1.1.2 [2022-06] - small layout changes"),
-						         p("KidneyGPS 1.1.1 [2022-04] - minor fixes"),
-						         p("KidneyGPS 1.1 [2022-03]- integration of eQTL data from Susztaklab"),
-						         p("first publication KidneyGPS 1.0 [2022-03]")
-						         )
+						         p("Did you use KidneyGPS for a publication? We would appreciate if you cite us: \"KidneyGPS: an easily accessible web application to prioritize kidney function genes and variants based on evidence from genome-wide association studies\"  and the original data sources appropriately."),
+						         hr()
+						         ),
+						         tabPanel("Contact",h3("Contact"),
+						                  p("If you have any questions not answered by the \"Documentation & Help\" section, please contact: Kira Stanzick ", tags$a(href="mailto:kira-julia.stanzick@klinik.uni-regensburg.de", "(kira-julia.stanzick@klinik.uni-regensburg.de)")),
+						                  hr()
+						                  
+						                  ),
+						         widths = c(2,8)
+						         ))
 	)
 							
   
@@ -630,7 +678,6 @@ server <- function(input, output, session) {
   ))
 
 # GPS ---------------------------------------------------------------------
-
   
   sketch = htmltools::withTags(table(
     class = 'display',
@@ -641,47 +688,53 @@ server <- function(input, output, session) {
         th(rowspan = 2, 'Locus name**'),
         th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
         th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-        th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
+        th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the locus lead variant is nominal significant (P<0.05) associated with concordent effect direction with ", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or ",tags$abbr(title="blood urea nitrogen","BUN")))),
+        th(rowspan = 2, class="DMwithcomment hover",'Signal interaction with DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
+        th(rowspan = 2, class="declinewithcomment hover",'Signal association with eGFRcrea decline', span(class="declinecomment",list( "Information whether the signal index variant (or a correlated variant) was established with annual eGFR-decline, Gorski et al. 2022"))),
         th(rowspan = 2, '# credible variants in signal'),
         th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
         th(rowspan = 2, 'overall gene score'),
-        th(colspan = 3, class="CADD", span('# protein-relevant credible variants in the gene ')),
+        th(colspan = 3, class="CADD", span('# protein-relevant credible variants in the gene')),
         th(colspan = 6, class="eqtl", '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
         th(rowspan = 2, class="eqtl", 'Coloc in NEPTUNE tissue'),
         th(rowspan = 2, class="pheno",'# kidney phenotypes in mouse'),
         th(rowspan = 2, class="pheno", '# kidney phenotypes in human'),
-        th(rowspan = 2, class="dm", 'Diabetes specific effect'),
-        th(rowspan = 2, class="decline", 'eGFRcrea decline effect'),
-        th(rowspan = 2, class="drug", 'Drugable'),
-        th(rowspan = 2, class="pathway", 'In enriched pathway'),
+        th(rowspan = 2, class ="drug", 'Gene is known as drug target or for drug interaction'),
         th(rowspan = 2, 'Distance to locus lead variant'),
         th(rowspan = 2, 'Chromosome'),
         th(rowspan = 2, 'Position gene start'),
         th(rowspan = 2, 'Position gene end')
       ),
       tr(
-        lapply(c('stop-gained, stop-lost, non-synonymous','canonical splice, noncoding change, synonymous, splice site'),th),
-               th('other deleterious variant (CADD-Phred',HTML("<span>&#8805;</span>"),'15)'),
-        lapply(c('eQTL glomerulus (NEPTUNE, or Sheng et al [Nat.Genet. 2021])','eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat.Genet. 2021])','eQTL kidney cortex (GTEx)','eQTL other tissue (GTEx)','sQTL kidney cortex (GTEx)','sQTL other tissue (GTEx)'), th)
+        th('stop-gained, stop-lost, non-synonymous'),
+        th('canonical splice, noncoding change, synonymous, splice site'),
+        th(span('other deleterious variant (CADD-Phred',HTML('<span>&#8805;</span>'),'15)')),
+        th(class='eQTLglowithcomment hover', 'eQTL glomerulus', span(class='eQTLglocomment','NEPTUNE, or Sheng et al. [Nat.Genet. 2021]')),
+        th(class='eQTLtubwithcomment hover','eQTL tubulo-interstitium', span(class='eQTLtubcomment','NEPTUNE, or Sheng et al. [Nat.Genet. 2021]')),
+        th('eQTL kidney cortex (GTEx)'),
+        th('eQTL other tissue (GTEx)'),
+        th('sQTL kidney cortex (GTEx)'),
+        th('sQTL other tissue (GTEx)')
       )
     )
   ))
- 
+  
   headerCallback <- "function( thead, data, start, end, display ) {
-  $(thead).closest('thead').find('th').eq(8).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(9).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(10).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(11).css('background-color', '#b3ffb3');
-  $(thead).closest('thead').find('th').eq(12).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(10).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(11).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(12).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(13).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(14).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(15).css('background-color', '#d9b3ff');
+  $(thead).closest('thead').find('th').eq(20).css('background-color', '#ccffff');
   $(thead).closest('thead').find('th').eq(21).css('background-color', '#ccffff');
   $(thead).closest('thead').find('th').eq(22).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(23).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(23).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(24).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(25).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(26).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(27).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(28).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(29).css('background-color', '#ffdb99');
   }"
   
   
@@ -690,36 +743,42 @@ server <- function(input, output, session) {
   eff_noppa_5 <- effector_genes_noppa[which(effector_genes_noppa%in%which(GPS$credible_variants_per_locus_signal<=5))]
   kid_5 <- kidney_genes[which(kidney_genes%in%which(GPS$credible_variants_per_locus_signal<=5))]
   
-  filter_rows_gps <- reactiveVal(
-    if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==1){c(1:nrow(GPS))}
-    if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==1){effector_genes_noppa}
-    if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==1){kidney_genes}
-    if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==1){c(effector_genes_noppa,kidney_genes)}
-    if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==1){effector_genes_noppa[which(effector_genes_noppa%in%kidney_genes)]}
-    if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==2){which(GPS$credible_variants_per_locus_signal==1)}
-    if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==2){eff_noppa_1}
-    if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==2){kid_1}
-    if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==2){c(eff_noppa_1,kid_1)}
-    if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==2){eff_noppa_1[which(eff_noppa_1%in%kid_1)]}
-    if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==3){which(GPS$credible_variants_per_locus_signal<=5)}
-    if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==3){eff_noppa_5}
-    if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==3){kid_5}
-    if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==3){c(eff_noppa_5,kid_5)}
-    if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==3){eff_noppa_5[which(eff_noppa_5%in%kid_5)]}
-  ) 
+  filter_rows_gps <- reactiveValues( 'noppa' = c())
+  GPS_columns <- match(c('Gene*','Locus name**','Locus ID','Signal ID','eGFRcys or BUN validation','DM_effect','decline_effect','# credible variants in signal','max PPA','Score','stop-gained, stop-lost, non-synonymus','canonical splice, noncoding change, synonymous, splice site','other deleterious variant','eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL kidney cortex (GTEx)','eQTL other tissue (GTEx)','sQTL kidney cortex (GTEx)','sQTL other tissue (GTEx)','Coloc in NEPTUNE tissue','# kidney phenotypes in mouse','# kidney phenotypes in human','known_drug_target','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),names(GPS_show))
+  observe(
+          if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=c(1:nrow(GPS))}
+          else if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=effector_genes_noppa}
+          else if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=kidney_genes}
+          else if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=c(effector_genes_noppa,kidney_genes)}
+          else if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=effector_genes_noppa[which(effector_genes_noppa%in%kidney_genes)]}
+          else if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=which(GPS$credible_variants_per_locus_signal==1)}
+          else if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=eff_noppa_1}
+          else if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=kid_1}
+          else if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=c(eff_noppa_1,kid_1)}
+          else if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=eff_noppa_1[which(eff_noppa_1%in%kid_1)]}
+          else if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=which(GPS$credible_variants_per_locus_signal<=5)}
+          else if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=eff_noppa_5}
+          else if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=kid_5}
+          else if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=c(eff_noppa_5,kid_5)}
+          else if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=eff_noppa_5[which(eff_noppa_5%in%kid_5)]}
+)
+    
   
+  observe
   output$GPS <- renderDataTable({
     
     
     datatable(
-      GPS_show[filter_rows_gps,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
+      #GPS_show[filter_rows_gps$noppa,c(4,1:3,9,10,24,23,11:19,22,20,21,5:8)], rownames=FALSE, without DM/decline
+      GPS_show[filter_rows_gps$noppa,GPS_columns], rownames=FALSE, #with DM/decline
 
         options = list(
                     columnDefs = list(list(className = 'dt-left', targets = "_all"))
                     , scrollX=TRUE
                     ,headerCallback = JS(headerCallback),
                      dom = 'rtBip',
-                    buttons= list(c('copy', 'excel'))
+                    buttons= list(c('copy', 'excel','csv'))
+                    
 
         ),
       extensions= 'Buttons',
@@ -739,35 +798,37 @@ server <- function(input, output, session) {
   eff_10ppa_1 <- effector_genes_10ppa[which(effector_genes_10ppa%in%which(GPS$credible_variants_per_locus_signal==1))]
   eff_10ppa_5 <- effector_genes_10ppa[which(effector_genes_10ppa%in%which(GPS$credible_variants_per_locus_signal==5))]
   
-  filter_rows_gps_10 <- reactiveVal(
-    if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==1){c(1:nrow(GPS))}
-    if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==1){effector_genes_10ppa}
-    if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==1){kidney_genes}
-    if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==1){c(effector_genes_10ppa,kidney_genes)}
-    if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==1){effector_genes_10ppa[which(effector_genes_10ppa%in%kidney_genes)]}
-    if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==2){which(GPS$credible_variants_per_locus_signal==1)}
-    if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==2){eff_10ppa_1}
-    if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==2){kid_1}
-    if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==2){c(eff_10ppa_1,kid_1)}
-    if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==2){eff_10ppa_1[which(eff_10ppa_1%in%kid_1)]}
-    if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==3){which(GPS$credible_variants_per_locus_signal<=5)}
-    if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==3){eff_10ppa_5}
-    if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==3){kid_5}
-    if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==3){c(eff_10ppa_5,kid_5)}
-    if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==3){eff_10ppa_5[which(eff_10ppa_5%in%kid_5)]}
-  )
+  filter_rows_gps <- reactiveValues("ppa10" = c())
+    observe(if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=c(1:nrow(GPS))}
+    else if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=effector_genes_10ppa}
+    else if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=kidney_genes}
+    else if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=c(effector_genes_10ppa,kidney_genes)}
+    else if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=effector_genes_10ppa[which(effector_genes_10ppa%in%kidney_genes)]}
+    else if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=which(GPS$credible_variants_per_locus_signal==1)}
+    else if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=eff_10ppa_1}
+    else if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=kid_1}
+    else if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=c(eff_10ppa_1,kid_1)}
+    else if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=eff_10ppa_1[which(eff_10ppa_1%in%kid_1)]}
+    else if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=which(GPS$credible_variants_per_locus_signal<=5)}
+    else if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=eff_10ppa_5}
+    else if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=kid_5}
+    else if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=c(eff_10ppa_5,kid_5)}
+    else if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=eff_10ppa_5[which(eff_10ppa_5%in%kid_5)]})
+    
+  
   output$GPS_10 <- renderDataTable({
     
     
     datatable(
-      GPS_10_show[filter_rows_gps_10,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
+      GPS_10_show[filter_rows_gps$ppa10,GPS_columns], rownames=FALSE,
       
       options = list(
         columnDefs = list(list(className = 'dt-left', targets = "_all"))
         , scrollX=TRUE
         ,headerCallback = JS(headerCallback),
         dom = 'rtBip',
-        buttons= list(c('copy', 'excel'))
+        buttons= list(c('copy', 'excel','csv')),
+        autoWidth = TRUE
         
       ),
       extensions= 'Buttons',
@@ -787,35 +848,37 @@ server <- function(input, output, session) {
   eff_50ppa_1 <- effector_genes_50ppa[which(effector_genes_50ppa%in%which(GPS$credible_variants_per_locus_signal==1))]
   eff_50ppa_5 <- effector_genes_50ppa[which(effector_genes_50ppa%in%which(GPS$credible_variants_per_locus_signal==5))]
   
-  filter_rows_gps_50 <- reactiveVal(
-    if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==1){c(1:nrow(GPS))}
-    if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==1){effector_genes_50ppa}
-    if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==1){kidney_genes}
-    if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==1){c(effector_genes_50ppa,kidney_genes)}
-    if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==1){effector_genes_50ppa[which(effector_genes_50ppa%in%kidney_genes)]}
-    if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==2){which(GPS$credible_variants_per_locus_signal==1)}
-    if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==2){eff_50ppa_1}
-    if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==2){kid_1}
-    if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==2){c(eff_50ppa_1,kid_1)}
-    if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==2){eff_50ppa_1[which(eff_50ppa_1%in%kid_1)]}
-    if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==3){which(GPS$credible_variants_per_locus_signal<=5)}
-    if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==3){eff_50ppa_5}
-    if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==3){kid_5}
-    if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==3){c(eff_50ppa_5,kid_5)}
-    if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==3){eff_50ppa_5[which(eff_50ppa_5%in%kid_5)]}
-  )
+  filter_rows_gps <- reactiveValues( 'ppa50' = c())
+  
+  observe(if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=c(1:nrow(GPS))}
+    else if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=effector_genes_50ppa}
+    else if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=kidney_genes}
+    else if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=c(effector_genes_50ppa,kidney_genes)}
+    else if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=effector_genes_50ppa[which(effector_genes_50ppa%in%kidney_genes)]}
+    else if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=which(GPS$credible_variants_per_locus_signal==1)}
+    else if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=eff_50ppa_1}
+    else if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=kid_1}
+    else if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=c(eff_50ppa_1,kid_1)}
+    else if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=eff_50ppa_1[which(eff_50ppa_1%in%kid_1)]}
+    else if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=which(GPS$credible_variants_per_locus_signal<=5)}
+    else if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=eff_50ppa_5}
+    else if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=kid_5}
+    else if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=c(eff_50ppa_5,kid_5)}
+    else if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=eff_50ppa_5[which(eff_50ppa_5%in%kid_5)]})
+    
+  
   output$GPS_50 <- renderDataTable({
     
     
     datatable(
-      GPS_50_show[filter_rows_gps_50,c(4,1:3,9,10,24,23,11:19,22,20,21,25:28,5:8)], rownames=FALSE,
+      GPS_50_show[filter_rows_gps$ppa50,GPS_columns], rownames=FALSE,
       
       options = list(
         columnDefs = list(list(className = 'dt-left', targets = "_all"))
         , scrollX=TRUE
         ,headerCallback = JS(headerCallback),
         dom = 'rtBip',
-        buttons= list(c('copy', 'excel'))
+        buttons= list(c('copy', 'excel','csv'))
         
       ),
       extensions= 'Buttons',
@@ -844,45 +907,53 @@ server <- function(input, output, session) {
         th(rowspan = 2, 'Locus name**'),
         th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
         th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-        th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
+        th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the locus lead variant is nominal significant (P<0.05) associated with concordent effect direction with ", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or ",tags$abbr(title="blood urea nitrogen","BUN")))),
+        th(rowspan = 2, class="DMwithcomment hover",'Signal interaction with DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
+        th(rowspan = 2, class="declinewithcomment hover",'Signal association with eGFRcrea decline', span(class="declinecomment",list( "Information whether the signal index variant (or a correlated variant) was established with annual eGFR-decline, Gorski et al. 2022"))),
         th(rowspan = 2, '# credible variants in signal'),
         th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-        th(colspan = 3, class="CADD", span('# protein-relevant credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
+        th(colspan = 3, class="CADD", span('# protein-relevant credible variants in the gene')),
         th(colspan = 6, class="eqtl", '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
         th(rowspan = 2, class="eqtl", 'Coloc in NEPTUNE tissue'),
         th(rowspan = 2, class="pheno",'# kidney phenotypes in mouse'),
         th(rowspan = 2, class="pheno", '# kidney phenotypes in human'),
-        th(rowspan = 2, class="dm", 'Diabetes specific effect'),
-        th(rowspan = 2, class="decline", 'eGFRcrea decline effect'),
-        th(rowspan = 2, class="drug", 'Drugable'),
-        th(rowspan = 2, class="pathway", 'In enriched pathway'),
+        th(rowspan = 2, class ="drug", 'Gene is known as drug target or for drug interaction'),
         th(rowspan = 2, 'Distance to locus lead variant'),
         th(rowspan = 2, 'Chromosome'),
         th(rowspan = 2, 'Position gene start'),
         th(rowspan = 2, 'Position gene end')
       ),
       tr(
-        lapply(c('stop-gained, stop-lost, non-synonymous','canonical splice, noncoding change, synonymous, splice site','other deleterious variant','eQTL glomerulus (NEPTUNE, or Sheng et al [Nat.Genet. 2021])','eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat.Genet. 2021])','eQTL kidney cortex (GTEx)','eQTL other tissue (GTEx)','sQTL kidney cortex (GTEx)','sQTL other tissue (GTEx)'), th)
+        th('stop-gained, stop-lost, non-synonymous'),
+        th('canonical splice, noncoding change, synonymous, splice site'),
+        th(span('other deleterious variant (CADD-Phred',HTML('<span>&#8805;</span>'),'15)')),
+        th(class='eQTLglowithcomment hover', 'eQTL glomerulus', span(class='eQTLglocomment','NEPTUNE, or Sheng et al. [Nat.Genet. 2021]')),
+        th(class='eQTLtubwithcomment hover','eQTL tubulo-interstitium', span(class='eQTLtubcomment','NEPTUNE, or Sheng et al. [Nat.Genet. 2021]')),
+        th('eQTL kidney cortex (GTEx)'),
+        th('eQTL other tissue (GTEx)'),
+        th('sQTL kidney cortex (GTEx)'),
+        th('sQTL other tissue (GTEx)')
       )
     )
   ))
   
 
   headerCallback2 <- "function( thead, data, start, end, display ) {
-  $(thead).closest('thead').find('th').eq(7).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(8).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(9).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(10).css('background-color', '#b3ffb3');
-  $(thead).closest('thead').find('th').eq(11).css('background-color', '#b3ffb3');
-  $(thead).closest('thead').find('th').eq(20).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(21).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(22).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(23).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(24).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(25).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(9).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(10).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(11).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(12).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(13).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(14).css('background-color', '#d9b3ff');
+  $(thead).closest('thead').find('th').eq(23).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(24).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(25).css('background-color', '#ccffff');
   $(thead).closest('thead').find('th').eq(26).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(27).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(28).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(29).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(30).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(31).css('background-color', '#ffdb99');
   }"
   
   
@@ -951,14 +1022,14 @@ server <- function(input, output, session) {
   
   overlap_loci <- eventReactive(go$region,{nrow(ov_loci())!=0})
   
-  output$ov_loci <- DT::renderDataTable({
+  output$ov_loci <- DT::renderDT(server=FALSE, {
     if(valid_reg() & overlap_loci()){
       datatable(ov_loci(),rownames=FALSE,
                 options = list(
                   columnDefs = list(list(className = 'dt-left', targets = "_all"))
                   , scrollX=TRUE,
                   dom = 'lfrtBip',
-                  buttons= list(c('copy', 'excel'))
+                  buttons= list(c('copy', 'excel','csv'))
                 ),
                 extensions = 'Buttons',
                 caption = htmltools::tags$caption(
@@ -980,9 +1051,10 @@ server <- function(input, output, session) {
     }
   })
   
+  GPS_columns_region <- match(c('Gene*','Locus name**','Locus ID','Signal ID','eGFRcys or BUN validation','DM_effect','decline_effect','# credible variants in signal','max PPA','stop-gained, stop-lost, non-synonymus','canonical splice, noncoding change, synonymous, splice site','other deleterious variant','eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL kidney cortex (GTEx)','eQTL other tissue (GTEx)','sQTL kidney cortex (GTEx)','sQTL other tissue (GTEx)','Coloc in NEPTUNE tissue','# kidney phenotypes in mouse','# kidney phenotypes in human','known_drug_target','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),names(GPS_show))
   GPS_region_search <- reactive({
     if(valid_reg()&overlap_loci()){
-      x = GPS_show[which(GPS$locus_id%in%ov_loci()[,1]),c(4,1:3,9,10,24,11:19,22,20,21,25:28,5:8)]
+      x = GPS_show[which(GPS$locus_id%in%ov_loci()[,1]),GPS_columns_region]
       y = GPS[which(GPS$locus_id%in%ov_loci()[,1]),]
       v=c()
       for(i in 1:nrow(y)){
@@ -996,7 +1068,7 @@ server <- function(input, output, session) {
   })
   
   output$GPS_region_search <- 
-    DT::renderDataTable({
+    DT::renderDT(server=FALSE, {
       if(valid_reg()& !is.null(GPS_region_search())){
         datatable(GPS_region_search(),rownames=FALSE,
                   
@@ -1006,7 +1078,7 @@ server <- function(input, output, session) {
                     , scrollX=TRUE
                     ,headerCallback = JS(headerCallback2),
                     dom = 'lfrtBip',
-                    buttons= list(c('copy', 'excel'))
+                    buttons= list(c('copy', 'excel','csv'))
                     
                   ),
                   extensions= 'Buttons',
@@ -1240,14 +1312,14 @@ server <- function(input, output, session) {
       }
   })
   
-  output$all_var <- DT::renderDataTable({
+  output$all_var <- DT::renderDT(server=FALSE, {
     if(gws()){
       datatable(all_sig_show[which(all_sig$RSID%in%gws_snps()),c(15,11,12,2:8,22,23,24)], rownames=FALSE,
                 options = list(
                   columnDefs = list(list(className = 'dt-left', targets = "_all"))
                   , scrollX=TRUE,
                   dom = 'lfrtBip',
-                  buttons= list(c('copy', 'excel'))
+                  buttons= list(c('copy', 'excel','csv'))
                 ),
                 extensions = 'Buttons',
                 escape=FALSE,
@@ -1288,14 +1360,14 @@ server <- function(input, output, session) {
     }
   })
   
-  output$cred_var <- DT::renderDataTable({
+  output$cred_var <- DT::renderDT(server=FALSE, {
     if(valid()){
       datatable(cred_var_show[which(cred_var$rsid%in%cred_vars()),], rownames=FALSE,
                 options = list(
                   columnDefs = list(list(className = 'dt-left', targets = "_all"))
                   , scrollX=TRUE,
                   dom = 'lfrtBip',
-                  buttons= list(c('copy', 'excel'))
+                  buttons= list(c('copy', 'excel','csv'))
                 ),
                 extensions = 'Buttons',
                 escape=FALSE,
@@ -1345,7 +1417,7 @@ server <- function(input, output, session) {
       }
   })
   
-  output$CADD <- DT::renderDataTable({
+  output$CADD <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="CADD")){
         if(any(CADD$RSID%in%cred_vars())){
@@ -1356,7 +1428,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1393,7 +1465,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$glo <- DT::renderDataTable({
+  output$glo <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="NEPTUNE_glo")){
         if(any(glo_show$RSID%in%cred_vars())){
@@ -1402,7 +1474,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1438,7 +1510,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$tub <- DT::renderDataTable({
+  output$tub <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="NEPTUNE_tub")){
         if(any(tub_show$RSID%in%cred_vars())){
@@ -1447,7 +1519,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1483,7 +1555,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$eqtl <- DT::renderDataTable({
+  output$eqtl <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="GTEx_eQTL")){
         if(any(GTEx_eQTL$rs_id_dbSNP151_GRCh38p7%in%cred_vars())){
@@ -1492,7 +1564,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1527,7 +1599,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$sqtl <- DT::renderDataTable({
+  output$sqtl <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="GTEx_sQTL")){
         if(any(GTEx_sQTL$rs_id_dbSNP151_GRCh38p7%in%cred_vars())){
@@ -1536,7 +1608,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1571,7 +1643,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$eqtl_wo_kidney <- DT::renderDataTable({
+  output$eqtl_wo_kidney <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="GTEx_wo_kidney_eQTL")){
         if(any(gtex_without_kidney$rs_id_dbSNP151_GRCh38p7%in%cred_vars())){
@@ -1580,7 +1652,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1615,7 +1687,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$sqtl_wo_kidney <- DT::renderDataTable({
+  output$sqtl_wo_kidney <- DT::renderDT(server=FALSE, {
     if(valid()){
       if(any(detail_evidence_variant()=="GTEx_wo_kidney_sQTL")){
         if(any(sqtl_without_kidney$rs_id_dbSNP151_GRCh38p7%in%cred_vars())){
@@ -1624,7 +1696,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1818,7 +1890,7 @@ server <- function(input, output, session) {
   
   valid_gene <- eventReactive(go$gene, {!is.null(genes_in_gps())})
   
-  columns <- eventReactive(go$gene, {if(isTruthy(input$columns1)|isTruthy(input$columns2)|isTruthy(input$columns3)){ as.numeric(c(input$columns1,input$columns2,input$columns3))}else{NULL}})
+  columns <- eventReactive(go$gene, {if(isTruthy(input$columns1)|isTruthy(input$columns2)|isTruthy(input$columns3)|isTruthy(input$columns4)){ as.numeric(c(input$columns1,input$columns2,input$columns3,input$columns4))}else{NULL}})
   #detail_evidence_gene <- eventReactive(go$gene, {c(input$detail_evidence_gene_1,input$detail_evidence_gene_2,input$detail_evidence_gene_3)})
   
   detail_evidence_locus_gene <- eventReactive(go$gene, {input$detail_evidence_locus_gene})
@@ -1887,7 +1959,7 @@ server <- function(input, output, session) {
   
  
   #CADD
-  output$CADD_gene <- DT::renderDataTable({
+  output$CADD_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()%in%c(11:13))){
         if(any(toupper(CADD$GeneName)%in%genes_in_gps())){
@@ -1898,7 +1970,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -1921,8 +1993,8 @@ server <- function(input, output, session) {
       if(any(columns()%in%c(11:13))){
         if(any(toupper(CADD$GeneName)%in%genes_in_gps())){
           x = CADD[which(toupper(CADD$GeneName)%in%genes_in_gps()&CADD$PPA>=ppa()),]
-          if(any(duplicated(x[,-c(19,20)]))){
-            l = which(duplicated(x[,-c(19,20)]))
+          if(any(duplicated(x))){
+            l = which(duplicated(x))
             x = x[-l,]
           } 
           x
@@ -1934,29 +2006,29 @@ server <- function(input, output, session) {
   output$CADD_gene_text <- renderText({
     if(inputtype$gene_final=="single"){
       if(is.data.frame(cadd_gene())){
-          paste(genes_in_gps()," contains at least one credible variant that is predicted deleterious and has a functional consequence for ",genes_in_gps() ,":",sep="")
+          paste(genes_in_gps()," contains at least one credible variant that is predicted deleterious or has a functional consequence for ",genes_in_gps() ,":",sep="")
       }else{
-          paste(genes_in_gps()," does not contain a credible variant that is predicted deleterious and has a functional consequence for ",genes_in_gps(),".",sep="")
+          paste(genes_in_gps()," does not contain a credible variant that is predicted deleterious or has a functional consequence for ",genes_in_gps(),".",sep="")
       }
     }else{
       if(is.data.frame(cadd_gene())){
         if(length(genes_in_gps())==1){
-          paste(genes_in_gps()," contains at least one credible variant that is predicted deleterious and has a functional consequence for ",genes_in_gps() ,":",sep="")
+          paste(genes_in_gps()," contains at least one credible variant that is predicted deleterious or has a functional consequence for ",genes_in_gps() ,":",sep="")
         }else{
           if(length(unique(cadd_gene()[,15])==1)){
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, ",length(unique(cadd_gene()[,15]))," gene contains at least one credible variant that is predicted deleterious and has a functional consequence for this gene:",sep="")
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, ",length(unique(cadd_gene()[,15]))," gene contains at least one credible variant that is predicted deleterious or has a functional consequence for this gene:",sep="")
           }else{
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, ",length(unique(cadd_gene()[,15]))," genes contain at least one credible variant that is predicted deleterious and has a functional consequence for the respective gene:",sep="")
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, ",length(unique(cadd_gene()[,15]))," genes contain at least one credible variant that is predicted deleterious or has a functional consequence for the respective gene:",sep="")
           }
         }
       }else{
-        paste("None of your ",length(genes_in_gps()), " searched genes included in the GPS contains at least one credible variant that is predicted deleterious and has a functional consequence for the respective gene.",sep="")
+        paste("None of your ",length(genes_in_gps()), " searched genes included in the GPS contains at least one credible variant that is predicted deleterious or has a functional consequence for the respective gene.",sep="")
       }
     }
   })
   
   #Neptune glomerulus
-  output$glo_gene <- DT::renderDataTable({
+  output$glo_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==14)){
         if(any(toupper(glo_show$`Affected gene`)%in%genes_in_gps())){
@@ -1965,7 +2037,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -2016,7 +2088,7 @@ server <- function(input, output, session) {
   })
   
   #Neptune tubulo-interstitium
-  output$tub_gene <- DT::renderDataTable({
+  output$tub_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==15)){
         if(any(toupper(tub_show$`Affected gene`)%in%genes_in_gps())){
@@ -2025,7 +2097,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -2062,10 +2134,10 @@ server <- function(input, output, session) {
         if(length(genes_in_gps())==1){
           paste("Expression of ",genes_in_gps()," is modulated by a credible variant in tubulo-interstitial tissue:",sep="")
         }else{
-          if(length(unique(tub_gene()[,5]))==1){
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(tub_gene()[,5]))," gene is modulated by a credible variant in tubulo-interstitial tissue:",sep="")
+          if(length(unique(tub_gene()[,'Approved.symbol']))==1){
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(tub_gene()[,'Approved.symbol']))," gene is modulated by a credible variant in tubulo-interstitial tissue:",sep="")
           }else{
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(tub_gene()[,5]))," genes is modulated by a credible variant in tubulo-interstitial tissue:",sep="")
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(tub_gene()[,'Approved.symbol']))," genes is modulated by a credible variant in tubulo-interstitial tissue:",sep="")
           }
           
         }
@@ -2077,16 +2149,16 @@ server <- function(input, output, session) {
   })
   
   #GTEx eQTL kidney
-  output$eqtl_gene <- DT::renderDataTable({
+  output$eqtl_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==16)){
         if(any(toupper(GTEx_eQTL$gene)%in%genes_in_gps())){
-          datatable(GTEx_eQTL_show[which(toupper(GTEx_eQTL$gene)%in%genes_in_gps()&GTEx_eQTL$PPA>=ppa()),],rownames=FALSE,
+          datatable(GTEx_eQTL_show[which(toupper(GTEx_eQTL$gene)%in%genes_in_gps()&GTEx_eQTL$ppa>=ppa()),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     caption = htmltools::tags$caption(
@@ -2104,7 +2176,7 @@ server <- function(input, output, session) {
     if(valid_gene()){
       if(any(columns()==16)){
         if(any(toupper(GTEx_eQTL$gene)%in%genes_in_gps())){
-          GTEx_eQTL[which(toupper(GTEx_eQTL$gene)%in%genes_in_gps()&GTEx_eQTL$PPA>=ppa()),]
+          GTEx_eQTL[which(toupper(GTEx_eQTL$gene)%in%genes_in_gps()&GTEx_eQTL$ppa>=ppa()),]
           
         }else{0}
       }else{0}
@@ -2123,10 +2195,10 @@ server <- function(input, output, session) {
         if(length(genes_in_gps())==1){
           paste("Expression of ",genes_in_gps()," is modulated by a credible variant in kidney cortex tissue:",sep="")
         }else{
-          if(length(unique(eqtl_gene()[,17]))==1){
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(eqtl_gene()[,17]))," gene is modulated by a credible variant in kidney cortex tissue:",sep="")
+          if(length(unique(eqtl_gene()[,'gene']))==1){
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(eqtl_gene()[,'gene']))," gene is modulated by a credible variant in kidney cortex tissue:",sep="")
           }else{
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(eqtl_gene()[,17]))," genes is modulated by a credible variant in kidney cortex tissue:",sep="")
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," expression of ",length(unique(eqtl_gene()[,'gene']))," genes is modulated by a credible variant in kidney cortex tissue:",sep="")
           }
           
         }
@@ -2139,16 +2211,16 @@ server <- function(input, output, session) {
   
   #GTEx other tissue eQTL
   
-  output$eqtl_wo_kidney_gene <- DT::renderDataTable({
+  output$eqtl_wo_kidney_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==19)){
-        if(any(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps())){
+        if(any(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps())){ "Affected gene"
           datatable(gtex_without_kidney_show[which(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps()& gtex_without_kidney_show$PPA >= ppa()),c(1:13)],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions='Buttons',
                     caption = htmltools::tags$caption(
@@ -2164,7 +2236,7 @@ server <- function(input, output, session) {
   eqtl_wo_kidney_gene <- reactive({
     if(valid_gene()){
       if(any(columns()==19)){
-        if(any(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps())){
+        if(any(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps())){ # column 3 is "Affected gene"
           gtex_without_kidney_show[which(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps()& gtex_without_kidney_show$PPA >= ppa()),]
         }else{0}
       }else{0}
@@ -2199,16 +2271,16 @@ server <- function(input, output, session) {
   
   
   #sQTL kidney
-  output$sqtl_gene <- DT::renderDataTable({
+  output$sqtl_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==18)){
         if(any(toupper(GTEx_sQTL$gene)%in%genes_in_gps())){
-          datatable(GTEx_sQTL_show[which(toupper(GTEx_sQTL$gene)%in%genes_in_gps()& GTEx_sQTL$PPA >= ppa()),],rownames=FALSE,
+          datatable(GTEx_sQTL_show[which(toupper(GTEx_sQTL$gene)%in%genes_in_gps()& GTEx_sQTL$ppa >= ppa()),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions='Buttons',
                     caption = htmltools::tags$caption(
@@ -2226,7 +2298,7 @@ server <- function(input, output, session) {
     if(valid_gene()){
       if(any(columns()==18)){
         if(any(toupper(GTEx_sQTL$gene)%in%genes_in_gps())){
-          GTEx_sQTL[which(toupper(GTEx_sQTL$gene)%in%genes_in_gps()& GTEx_sQTL$PPA >= ppa()),]
+          GTEx_sQTL[which(toupper(GTEx_sQTL$gene)%in%genes_in_gps()& GTEx_sQTL$ppa >= ppa()),]
         }else{0}
       }else{0}
     }else{0}
@@ -2244,10 +2316,10 @@ server <- function(input, output, session) {
         if(length(genes_in_gps())==1){
           paste("Splicing of ",genes_in_gps()," is modulated by a credible variant in kidney cortex tissue:",sep="")
         }else{
-          if(length(unique(sqtl_gene()[,18]))==1){
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," splicing of ",length(unique(sqtl_gene()[,18]))," gene is modulated by a credible variant in kidney cortex tissue:",sep="")
+          if(length(unique(sqtl_gene()[,'gene']))==1){
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," splicing of ",length(unique(sqtl_gene()[,'gene']))," gene is modulated by a credible variant in kidney cortex tissue:",sep="")
           }else{
-            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," splicing of ",length(unique(sqtl_gene()[,18]))," genes is modulated by a credible variant in kidney cortex tissue:",sep="")
+            paste("Of your ",length(genes_in_gps()), " searched genes included in the GPS, "," splicing of ",length(unique(sqtl_gene()[,'gene']))," genes is modulated by a credible variant in kidney cortex tissue:",sep="")
           }
         }
         
@@ -2260,16 +2332,16 @@ server <- function(input, output, session) {
   
   
   #sQTL without kidney
-  output$sqtl_wo_kidney_gene <- DT::renderDataTable({
+  output$sqtl_wo_kidney_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==19)){
-        if(any(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps())){
+        if(any(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps())){ #column 3 is 'Affected gene'
           datatable(sqtl_without_kidney_show[which(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps()& sqtl_without_kidney_show$PPA >= ppa()),c(1:13)],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions='Buttons',
                     caption = htmltools::tags$caption(
@@ -2285,7 +2357,7 @@ server <- function(input, output, session) {
   sqtl_wo_kidney_gene <- reactive({
     if(valid_gene()){
       if(any(columns()==19)){
-        if(any(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps())){
+        if(any(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps())){ #column 3 is 'Affected gene'
           sqtl_without_kidney_show[which(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps()& sqtl_without_kidney_show$PPA >= ppa()),]
         }else{0}
       }else{0}
@@ -2319,7 +2391,7 @@ server <- function(input, output, session) {
   })
   
   #MGI
-  output$mgi_gene <- DT::renderDataTable({
+  output$mgi_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==20)){
         if(any(toupper(MGI$human_symbol)%in%genes_in_gps())){
@@ -2328,7 +2400,7 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons'
                     )
@@ -2375,7 +2447,7 @@ server <- function(input, output, session) {
   })
   
   #OMIM
-  output$omim_gene <- DT::renderDataTable({
+  output$omim_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==21)){
           if(any(toupper(OMIM$Gene)%in%genes_in_gps())){
@@ -2384,14 +2456,14 @@ server <- function(input, output, session) {
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
                       , scrollX=TRUE,
                       dom = 'lfrtBip',
-                      buttons= list(c('copy', 'excel'))
+                      buttons= list(c('copy', 'excel','csv'))
                     ),
                     extensions = 'Buttons',
                     escape = FALSE
                     ,caption = htmltools::tags$caption(
                       style = 'caption-side: bottom; text-align: left; font-weight: normal;',
                       htmltools::tags$p('* Link to OMIM entry'),
-                      htmltools::tags$p('** Online Mendelian Inheritance in Man, OMIM or Groopman et al, N.Engl.J.Med. 2019')
+                      htmltools::tags$p('** Online Mendelian Inheritance in Man, OMIM; Groopman et al, N.Engl.J.Med. 2019 or Wopperer et al, Kidney Int. 2022')
                     )
                     )
         }
@@ -2438,8 +2510,74 @@ server <- function(input, output, session) {
     
   })
   
+  #drugability
+  output$drug_gene <- DT::renderDT(server=FALSE, {
+    if(valid_gene()){
+      if(any(columns()==25)){
+        if(any(toupper(drugability$gps_gene)%in%genes_in_gps())){
+          datatable(drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps()),],rownames=FALSE,
+                    options = list(
+                      columnDefs = list(list(className = 'dt-left', targets = "_all"))
+                      , scrollX=TRUE,
+                      dom = 'lfrtBip',
+                      buttons= list(c('copy', 'excel','csv'))
+                    ),
+                    extensions = 'Buttons',
+                    escape = FALSE
+                    ,caption = htmltools::tags$caption(
+                      style = 'caption-side: bottom; text-align: left; font-weight: normal;',
+                      htmltools::tags$p('* Link to Therapeutic Target Database (TTD)'),
+                      htmltools::tags$p('** This status is the highest status for any target of this drug. This does not necessarily need to be the queried gene. Check TTD for more information')
+                      
+                    )
+          )
+        }
+      }
+    } 
+  })
+  
+  
+  
+  drug_gene <- reactive({
+    if(valid_gene()){
+      if(any(columns()==25)){
+        if(any(toupper(drugability$gps_gene)%in%genes_in_gps())){
+          drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps()),]
+        }else{0}
+      }else{0}
+    }else{0}
+  })
+  
+  output$omim_gene_text <- renderText({
+    if(inputtype$gene_final=="single"){
+      if(is.data.frame(drug_gene())){
+        paste("Following drug information is described for ",genes_in_gps()," :",sep="")
+      }else{
+        paste(genes_in_gps()," is not described as known drug target or to show a drug interaction.",sep="")
+      }
+    }else{
+      if(is.data.frame(drug_gene())){
+        if(length(genes_in_gps())==1){
+          paste("Following drug information is described for ",genes_in_gps()," :",sep="")
+        }else{
+          if(length(unique(omim_gene()[,1]))==1){
+            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene()[,1]))," gene is described as a known drug target or to show a drug interaction:",sep="")
+          }else{
+            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene()[,1]))," genes are described as a known drug target or to show a drug interaction:",sep="")
+          }
+          
+        }
+        
+      }else{
+        paste("None of your ",length(genes_in_gps()), " searched genes included in the GPS is described as a known drug target or to show a drug interaction.",sep="")
+      }
+    }
+    
+  })
+  
+  
   #credible variants
-  output$cred_var_gene <- DT::renderDataTable({
+  output$cred_var_gene <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(detail_evidence_locus_gene()=="cred_var")){
         
@@ -2449,7 +2587,7 @@ server <- function(input, output, session) {
         
         snps=cred_var$rsid[which(cred_var$`Locus Id`%in%a &cred_var$ppa >= ppa())]
         eqtl=rep("-",length(snps))
-        if(is.data.frame(tub_gene())){eqtl[which(snps%in%tub_gene()[,1])]="eQTL"}
+        if(is.data.frame(tub_gene())){eqtl[which(snps%in%tub_gene()[,1])]="eQTL"} # column 1 is always rsid
         if(is.data.frame(glo_gene())){eqtl[which(snps%in%glo_gene()[,1])]="eQTL"}
         if(is.data.frame(eqtl_gene())){eqtl[which(snps%in%eqtl_gene()[,1])]="eQTL"}
         sqtl=rep("-",length(snps))
@@ -2467,7 +2605,7 @@ server <- function(input, output, session) {
                     columnDefs = list(list(className = 'dt-left', targets = "_all"))
                     , scrollX=TRUE,
                     dom = 'lfrtBip',
-                    buttons= list(c('copy', 'excel'))
+                    buttons= list(c('copy', 'excel','csv'))
                   ),
                   extensions = 'Buttons',
                   escape=FALSE,
@@ -2491,7 +2629,7 @@ server <- function(input, output, session) {
     if(valid_gene()){
       
         
-        x=GPS_show[which(toupper(GPS$Gene)%in%genes_in_gps()),c(1:10,24,20,21,22,25:28)]
+        x=GPS_show[which(toupper(GPS$Gene)%in%genes_in_gps()),]
 
         y=GPS[which(toupper(GPS$Gene)%in%genes_in_gps()),]
         rows=nrow(x)
@@ -2507,45 +2645,46 @@ server <- function(input, output, session) {
         for(i in 1:rows){
           
           if(is.data.frame(cadd_gene())){
-            cadd1[i]=nrow(cadd_gene()[which(cadd_gene()['signal_id']==y[i,26] & cadd_gene()['ConsScore']>6 & cadd_gene()['GeneName']==y[i,3] & cadd_gene()['region_id']==y[i,2]),])
+            cadd1[i]=nrow(cadd_gene()[which(cadd_gene()['signal_id']==y[i,'signal_id'] & cadd_gene()['ConsScore']>6 & cadd_gene()['GeneName']==y[i,'Gene'] & cadd_gene()['region_id']==y[i,'locus_id']),])
             
-            cadd2[i]=nrow(cadd_gene()[which(cadd_gene()['signal_id']==y[i,26] & cadd_gene()['ConsScore']>4& cadd_gene()['ConsScore']<=6& cadd_gene()['GeneName']==y[i,3] & cadd_gene()['region_id']==y[i,2]),])
+            cadd2[i]=nrow(cadd_gene()[which(cadd_gene()['signal_id']==y[i,'signal_id'] & cadd_gene()['ConsScore']>4& cadd_gene()['ConsScore']<=6& cadd_gene()['GeneName']==y[i,'Gene'] & cadd_gene()['region_id']==y[i,'locus_id']),])
             
-            cadd3[i]=nrow(cadd_gene()[which(cadd_gene()['signal_id']==y[i,26] & cadd_gene()['ConsScore']<=4& cadd_gene()['GeneName']==y[i,3] & cadd_gene()['region_id']==y[i,2]),])
+            cadd3[i]=nrow(cadd_gene()[which(cadd_gene()['signal_id']==y[i,'signal_id'] & cadd_gene()['ConsScore']<=4& cadd_gene()['GeneName']==y[i,'Gene'] & cadd_gene()['region_id']==y[i,'locus_id']),])
           }
           if(is.data.frame(tub_gene())){
             
-            tub_g[i]=length(unique(tub_gene()[which(tub_gene()['signal_id']==y[i,26]& tub_gene()['Approved.symbol']==y[i,3] & tub_gene()['region_id']==y[i,2]),1]))
+            tub_g[i]=length(unique(tub_gene()[which(tub_gene()['signal_id']==y[i,'signal_id']& tub_gene()['Approved.symbol']==y[i,'Gene'] & tub_gene()['region_id']==y[i,'locus_id']),1]))
           }
           if(is.data.frame(glo_gene())){
             
-            glo_g[i]=length(unique(glo_gene()[which(glo_gene()['signal_id']==y[i,26]& glo_gene()['Approved.symbol']==y[i,3] & glo_gene()['region_id']==y[i,2]),1]))
+            glo_g[i]=length(unique(glo_gene()[which(glo_gene()['signal_id']==y[i,'signal_id']& glo_gene()['Approved.symbol']==y[i,'Gene'] & glo_gene()['region_id']==y[i,'locus_id']),1]))
           }
           if(is.data.frame(eqtl_gene())){
-            eqtl_kid[i]=nrow(eqtl_gene()[which(eqtl_gene()['signal_id']==y[i,26]& eqtl_gene()['gene']==y[i,3] & eqtl_gene()['region_id']==y[i,2]),])
+            eqtl_kid[i]=nrow(eqtl_gene()[which(eqtl_gene()['signal_id']==y[i,'signal_id']& eqtl_gene()['gene']==y[i,'Gene'] & eqtl_gene()['region_id']==y[i,'locus_id']),])
           }
           if(is.data.frame(eqtl_wo_kidney_gene())){
-            eqtl_all[i]=length(unique(eqtl_wo_kidney_gene()[which(eqtl_wo_kidney_gene()['signal_id']==y[i,26]& eqtl_wo_kidney_gene()['Affected gene']==y[i,3] & eqtl_wo_kidney_gene()['region_id']==y[i,2]),1]))
+            eqtl_all[i]=length(unique(eqtl_wo_kidney_gene()[which(eqtl_wo_kidney_gene()['signal_id']==y[i,'signal_id']& eqtl_wo_kidney_gene()['Affected gene']==y[i,'Gene'] & eqtl_wo_kidney_gene()['region_id']==y[i,'locus_id']),1]))
           }
           if(is.data.frame(sqtl_gene())){
-            sqtl_kid[i]=nrow(sqtl_gene()[which(sqtl_gene()['signal_id']==y[i,26]& sqtl_gene()['gene']==y[i,3] & sqtl_gene()['region_id']==y[i,2]),])
+            sqtl_kid[i]=nrow(sqtl_gene()[which(sqtl_gene()['signal_id']==y[i,'signal_id']& sqtl_gene()['gene']==y[i,'Gene'] & sqtl_gene()['region_id']==y[i,'locus_id']),])
           }
           if(is.data.frame(sqtl_wo_kidney_gene())){
-            sqtl_all[i]=length(unique(sqtl_wo_kidney_gene()[which(sqtl_wo_kidney_gene()['signal_id']==y[i,26]& sqtl_wo_kidney_gene()['Affected gene']==y[i,3] & sqtl_wo_kidney_gene()['region_id']==y[i,2]),1]))
+            sqtl_all[i]=length(unique(sqtl_wo_kidney_gene()[which(sqtl_wo_kidney_gene()['signal_id']==y[i,'signal_id']& sqtl_wo_kidney_gene()['Affected gene']==y[i,'Gene'] & sqtl_wo_kidney_gene()['region_id']==y[i,'locus_id']),1]))
           }
         }
-        x[,19]=cadd1
-        x[,20]=cadd2
-        x[,21]=cadd3
-        x[,22]=glo_g
-        x[,23]=tub_g
-        x[,24]=eqtl_kid
-        x[,25]=eqtl_all
-        x[,26]=sqtl_kid
-        x[,27]=sqtl_all
-        x=x[,c(1:11,19:27,12,13,14,15:18)]
-        names(x)=c("Locus name**","Locus ID", "Signal ID", "Gene*", "Distance to locus lead variant","Chromosome","Start of gene","End of gene", "eGFRcys or BUN validation", "# credible variants in signal","max PPA","stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other deleterious variant","eQTL glomerular tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL tubulo-interstitial tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL kidney cortex tissue (GTEx)","eQTL other tissue (GTEx)","sQTL kidney cortex tisse (GTEx)","sQTL other tissue (GTEx)","mouse phenotype","human phenotype", "Coloc in NEPTUNE tissue","Diabetes specific effect","eGFRcrea decline effect","Drugable","In enriched pathway")
-        x[,c(4,1:3,9,10,11,(columns()+1),24:27,5:8)] #max PPA column is new -> alternativly change column values everywhere
+        x[,'stop-gained, stop-lost, non-synonymus']=cadd1
+        x[,'canonical splice, noncoding change, synonymous, splice site']=cadd2
+        x[,'other deleterious variant']=cadd3
+        x[,'eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])']=glo_g
+        x[,'eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])']=tub_g
+        x[,'eQTL kidney cortex (GTEx)']=eqtl_kid
+        x[,'eQTL other tissue (GTEx)']=eqtl_all
+        x[,'sQTL kidney cortex (GTEx)']=sqtl_kid
+        x[,'sQTL other tissue (GTEx)']=sqtl_all
+        
+        x=x[,c('Gene*','Locus name**','Locus ID','Signal ID','eGFRcys or BUN validation','DM_effect','decline_effect','# credible variants in signal','max PPA',names(GPS_show)[columns()],'Distance to locus lead variant','Chromosome','Position gene start','Position gene end')]
+        #names(x)=c("Locus name**","Locus ID", "Signal ID", "Gene*", "Distance to locus lead variant","Chromosome","Start of gene","End of gene", "eGFRcys or BUN validation", "# credible variants in signal","max PPA","stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other deleterious variant","eQTL glomerular tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL tubulo-interstitial tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL kidney cortex tissue (GTEx)","eQTL other tissue (GTEx)","sQTL kidney cortex tisse (GTEx)","sQTL other tissue (GTEx)","mouse phenotype","human phenotype", "Coloc in NEPTUNE tissue","Diabetes specific effect","eGFRcrea decline effect","Drugable","In enriched pathway")
+        #x[,c(4,1:3,9,25,26,10,11,(columns()+1),24:27,5:8)] #max PPA column is new -> alternativly change column values everywhere
         
       
     }else{0}
@@ -2560,224 +2699,50 @@ server <- function(input, output, session) {
   
   #header GPS
   sketch_gene <- reactive({
-    if(any(columns()%in%c(11:13))&any(columns()%in%c(14:19))&any(columns()%in%c(20:22))){
-       htmltools::withTags(table(
-              class = 'display',
-
-              thead(
-                tr(
-                  th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                  th(rowspan = 2, 'Locus name**'),
-                  th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                  th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                  th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                  th(rowspan = 2, '# credible variants in signal'),
-                  th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                  # lapply(c('Gene*','Locus name**','Locus ID','Signal ID','eGFRcys or BUN validation','# credible variants in signal'),th, rowspan=2),
-                  th(colspan = length(which(columns()%in%c(11:13))), class="CADD", span('# protein-relevant credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                  th(colspan = length(which(columns()%in%c(14:19))), class="eqtl", '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                  lapply(names(GPS_show[columns()[which(columns()==(22))]]), class="eqtl", th, rowspan=2),
-                  lapply(names(GPS_show[columns()[which(columns()%in%c(20:21))]]), class="pheno", th, rowspan=2),
-                  lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-                ),
-                tr(
-                  lapply(names(GPS_show[columns()[which(columns()%in%c(11:13))]]), th, class="CADD"),
-                  lapply(names(GPS_show[columns()[which(columns()%in%c(14:19))]]), th, class="eqtl")
-                )
-              )
-            ))
-          }else{
-
-            if(!any(columns()%in%c(11:13))&any(columns()%in%c(14:19))&any(columns()%in%c(20:22))){
-              htmltools::withTags(table(
-                class = 'display',
-
-                thead(
-                  tr(
-                    th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                    th(rowspan = 2, 'Locus name**'),
-                    th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                    th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                    th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                    th(rowspan = 2, '# credible variants in signal'),
-                    th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                    #th(colspan = length(which(columns()%in%c(11:13))), span('# deleterious credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                    th(colspan = length(which(columns()%in%c(14:19))), class="eqtl", '# credible variants, that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                    lapply(names(GPS_show[columns()[which(columns()==(22))]]), class="eqtl", th, rowspan=2),
-                    lapply(names(GPS_show[columns()[which(columns()%in%c(20:21))]]), class="pheno", th, rowspan=2),
-                    lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                  ),
-                  tr(
-                    lapply(names(GPS_show[columns()[which(columns()%in%c(11:13))]]), th, class="CADD"),
-                    lapply(names(GPS_show[columns()[which(columns()%in%c(14:19))]]), th, class="eqtl")
-                  )
-                )
-              ))
-            }else{
-
-              if(any(columns()%in%c(11:13))&!any(columns()%in%c(14:19))&any(columns()%in%c(20:22))){
-                htmltools::withTags(table(
-                  class = 'display',
-
-                  thead(
-                    tr(
-                      th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                      th(rowspan = 2, 'Locus name**'),
-                      th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                      th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                      th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                      th(rowspan = 2, '# credible variants in signal'),
-                      th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                      th(colspan = length(which(columns()%in%c(11:13))), class="CADD", span('# protein-relevant credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                      #th(colspan = length(which(columns()%in%c(14:19))), '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                      lapply(names(GPS_show[columns()[which(columns()==(22))]]), class="eqtl", th, rowspan=2),
-                      lapply(names(GPS_show[columns()[which(columns()%in%c(20:21))]]), class="pheno", th, rowspan=2),
-                      lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                    ),
-                    tr(
-                      lapply(names(GPS_show[columns()[which(columns()%in%c(11:13))]]), th, class="CADD"),
-                      lapply(names(GPS_show[columns()[which(columns()%in%c(14:19))]]), th, class="eqtl")
-                    )
-                  )
-                ))
-              }else{
-                if(any(columns()%in%c(11:13))&any(columns()%in%c(14:19))&!any(columns()%in%c(20:22))){
-                  htmltools::withTags(table(
-                    class = 'display',
-
-                    thead(
-                      tr(
-                        th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                        th(rowspan = 2, 'Locus name**'),
-                        th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                        th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                        th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                        th(rowspan = 2, '# credible variants in signal'),
-                        th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                        th(colspan = length(which(columns()%in%c(11:13))), class="CADD", span('# protein-relevant credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                        th(colspan = length(which(columns()%in%c(14:19))), class="eqtl", '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                        #lapply(names(GPS_show[columns()[which(columns()%in%c(20:22))]]), th, rowspan=2),
-                        lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                      ),
-                      tr(
-                        lapply(names(GPS_show[columns()[which(columns()%in%c(11:13))]]), th, class="CADD"),
-                        lapply(names(GPS_show[columns()[which(columns()%in%c(14:19))]]), th, class="eqtl")
-                      )
-                    )
-                  ))
-                }else{
-                  if(!any(columns()%in%c(11:13))&!any(columns()%in%c(14:19))&any(columns()%in%c(20:22))){
-                    htmltools::withTags(table(
-                      class = 'display',
-
-                      thead(
-                        tr(
-                          th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                          th(rowspan = 2, 'Locus name**'),
-                          th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                          th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                          th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                          th(rowspan = 2, '# credible variants in signal'),
-                          th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                          #th(colspan = length(which(columns()%in%c(11:13))), span('# deleterious credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                          #th(colspan = length(which(columns()%in%c(14:19))), '# credible variants, that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                          lapply(names(GPS_show[columns()[which(columns()==(22))]]), class="eqtl", th, rowspan=2),
-                          lapply(names(GPS_show[columns()[which(columns()%in%c(20:21))]]), class="pheno", th, rowspan=2),
-                          lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                        )
-                      )
-                    ))
-                  }else{
-                    if(!any(columns()%in%c(11:13))&any(columns()%in%c(14:19))&!any(columns()%in%c(20:22))){
-                      htmltools::withTags(table(
-                        class = 'display',
-
-                        thead(
-                          tr(
-                            th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                            th(rowspan = 2, 'Locus name**'),
-                            th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                            th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                            th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                            th(rowspan = 2, '# credible variants in signal'),
-                            th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                            #th(colspan = length(which(columns()%in%c(11:13))), span('# deleterious credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                            th(colspan = length(which(columns()%in%c(14:19))), class="eqtl", '# credible variants, that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                            #lapply(names(GPS_show[columns()[which(columns()%in%c(20:22))]]), th, rowspan=2),
-                            lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                          ),
-                          tr(
-                            lapply(names(GPS_show[columns()[which(columns()%in%c(11:13,14:19))]]), th)
-                          )
-                        )
-                      ))
-                    }else{
-                      if(any(columns()%in%c(11:13))&!any(columns()%in%c(14:19))&!any(columns()%in%c(20:22))){
-                        htmltools::withTags(table(
-                          class = 'display',
-
-                          thead(
-                            tr(
-                              th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                              th(rowspan = 2, 'Locus name**'),
-                              th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                              th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                              th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                              th(rowspan = 2, '# credible variants in signal'),
-                              th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                              th(colspan = length(which(columns()%in%c(11:13))), class="CADD", span('# protein-relevant credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                              #th(colspan = length(which(columns()%in%c(14:19))), '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                              #lapply(names(GPS_show[columns()[which(columns()%in%c(20:22))]]), th, rowspan=2),
-                              lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                            ),
-                            tr(
-                              lapply(names(GPS_show[columns()[which(columns()%in%c(11:13))]]), th, class="CADD"),
-                              lapply(names(GPS_show[columns()[which(columns()%in%c(14:19))]]), th, class="eqtl")
-                            )
-                          )
-                        ))
-                      }else{
-                        if(!is.numeric(columns())){
-                          htmltools::withTags(table(
-                            class = 'display',
-
-                            thead(
-                              tr(
-                                th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
-                                th(rowspan = 2, 'Locus name**'),
-                                th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
-                                th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
-                                th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the lead variant of the respective is nominal significant (P<0.05) associated with concordent effect direction with", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or",tags$abbr(title="blood urea nitrogen","BUN")))),
-                                th(rowspan = 2, '# credible variants in signal'),
-                                th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-                                #th(colspan = length(which(columns()%in%c(11:13))), span('# deleterious credible variants in the gene (CADD-Phred',HTML("<span>&#8805;</span>"),'15)')),
-                                #th(colspan = length(which(columns()%in%c(14:19))), '# credible variants, that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
-                                #lapply(names(GPS_show[columns()[which(columns()%in%c(20:22))]]), th, rowspan=2),
-                                lapply(c('Diabetes specific effect','eGFRcrea decline effect','Drugable','In enriched pathway','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),th, rowspan=2)
-
-                              )
-                            )
-                          )
-                          )
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+    
+    htmltools::withTags((table(
+      class='display',
+      thead(
+        tr(
+          th(rowspan = 2, class="Geneofficial hover", 'Gene*', span(class="Genecomment", "Official gene name from HGNC")),
+          th(rowspan = 2, 'Locus name**'),
+          th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
+          th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
+          th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the locus lead variant is nominal significant (P<0.05) associated with concordent effect direction with ", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or ",tags$abbr(title="blood urea nitrogen","BUN")))),
+          th(rowspan = 2, class="DMwithcomment hover",'Signal interaction with DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
+          th(rowspan = 2, class="declinewithcomment hover",'Signal association with eGFRcrea decline', span(class="declinecomment",list( "Information whether the signal index variant (or a correlated variant) was established with annual eGFR-decline, Gorski et al. 2022"))),
+          th(rowspan = 2, '# credible variants in signal'),
+          th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
+          if(any(columns()%in%c(11:13))) th(colspan = length(which(columns()%in%c(11:13))), class="CADD", span('# protein-relevant credible variants in the gene')),
+          if(any(columns()%in%c(14:19))) th(colspan = length(which(columns()%in%c(14:19))), class="eqtl", '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
+          if(any(columns()==20)) th(rowspan = 2, class="eqtl", 'Coloc in NEPTUNE tissue'),
+          if(any(columns()==21)) th(rowspan = 2, class="pheno",'# kidney phenotypes in mouse'),
+          if(any(columns()==22)) th(rowspan = 2, class="pheno", '# kidney phenotypes in human'),
+          if(any(columns()==25)) th(rowspan = 2, class="drug", 'Gene is known as drug target or for drug interaction'),
+          th(rowspan = 2, 'Distance to locus lead variant'),
+          th(rowspan = 2, 'Chromosome'),
+          th(rowspan = 2, 'Position gene start'),
+          th(rowspan = 2, 'Position gene end')
+        ),
+        tr(
+          if(any(columns()==11)) th(class="CADD",'stop-gained, stop-lost, non-synonymous'),
+          if(any(columns()==12)) th(class="CADD",'canonical splice, noncoding change, synonymous, splice site'),
+          if(any(columns()==13)) th(class="CADD", span('other deleterious variant (CADD-Phred',HTML('<span>&#8805;</span>'),'15)')),
+          if(any(columns()==14)) th(class='eQTLglowithcomment hover eqtl', 'eQTL glomerulus', span(class='eQTLglocomment','NEPTUNE, or Sheng et al. [Nat.Genet. 2021]')),
+          if(any(columns()==15)) th(class='eQTLtubwithcomment hover eqtl','eQTL tubulo-interstitium', span(class='eQTLtubcomment','NEPTUNE, or Sheng et al. [Nat.Genet. 2021]')),
+          if(any(columns()==16)) th(class="eqtl",'eQTL kidney cortex (GTEx)'),
+          if(any(columns()==17)) th(class="eqtl",'eQTL other tissue (GTEx)'),
+          if(any(columns()==18)) th(class="eqtl",'sQTL kidney cortex (GTEx)'),
+          if(any(columns()==19)) th(class="eqtl",'sQTL other tissue (GTEx)')
+        )
+      )
+    )))
+    
    })
   
   
   
-  output$GPSrows <-  DT::renderDataTable({
+  output$GPSrows <-  DT::renderDT( server =FALSE, {
     
     
     datatable(GPS_gene(), rownames=FALSE,
@@ -2786,7 +2751,10 @@ server <- function(input, output, session) {
                 , scrollX=TRUE,
                 lengthChange=TRUE,
                 dom = 'lfrtBip',
-                buttons= list(c('copy', 'excel'))
+                #buttons = list(extend = "csv", text = "Download Current Page", filename = "page",
+                               #exportOptions = list(
+                                 #modifier = list(page = "current")))
+                buttons= list(c('copy', 'excel','csv'))
               ),
               extensions = 'Buttons',
               escape=FALSE,
@@ -2808,7 +2776,7 @@ server <- function(input, output, session) {
                         columnDefs = list(list(className = 'dt-left', targets = "_all"))
                         , scrollX=TRUE,
                         dom = 'lfrtBip',
-                        buttons= list(c('copy', 'excel'))),
+                        buttons= list(c('copy', 'excel','csv'))),
                       extensions = 'Buttons',
                       caption = htmltools::tags$caption(
                         style = 'caption-side: bottom; text-align: left; font-weight: normal;',
@@ -2871,7 +2839,7 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       titel="Details GPS Table",
       tags$h4("Details on GPS table - Help:"),
-      p("Click here for details on the entries you find in the GPS table for a gene. If a gene has no entry in the respective column the selected option will not give you any result. Details can be shown also without selection the respective column in the GPS table.Fur further information check the Documentation page."),
+      p("Click here for details on the entries you find in the GPS table for a gene. If a gene has no entry in the respective column the selected option will not give you any result. For further information check the Documentation page."),
       easyClose = TRUE,
       footer=NULL,
       size = "m"
@@ -2897,6 +2865,7 @@ server <- function(input, output, session) {
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_GTEx_wo_kidney_sqtl_gene", condition= (any(columns()==19)&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_mgi_gene", condition= (any(columns()==20)&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_omim_gene", condition= (any(columns()==21)&valid_gene()))})
+  observeEvent(go$gene,{shinyjs::toggleElement(id="div_drug_gene", condition= (any(columns()==25)&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_summary", condition= any(detail_evidence_locus_gene()=="summary"&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_cred_var_gene", condition= any(detail_evidence_locus_gene()=="cred_var"&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_locus_zoom_gene", condition= any(input$gene.locuszoom=="locus_zoom"&valid_gene()))})
