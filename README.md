@@ -3,7 +3,7 @@ App for handling and displaying post-GWAMA data
 
 
 
-**latest update: Version 1.3**
+**latest update Nov 2022: Version 1.3**
 
   - Integrated drugability data from Therapeutic Target Database
 
