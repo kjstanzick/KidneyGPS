@@ -466,7 +466,7 @@ ui <-
 						         navlistPanel(
 						         tabPanel("Release history",
 						                h3("Release history"),
-						                p("KidneyGPS 1.2.0 [2022-11] - integration of drug target and interaction information for all genes from Therapeutic Target Database"),
+						                p("KidneyGPS 1.3.0 [2022-11] - integration of drug target and interaction information for all genes from Therapeutic Target Database"),
 						                p("KidneyGPS 1.2.0 [2022-10] - integration of ADTKD genes, DM-status interaction and eGFRcrea decline association; loosening of the CADD-Phred cutoff for protein-altering variants with a clear functional cosequence"),
 						                p("KidneyGPS 1.1.2 [2022-06] - small layout changes"),
 						                p("KidneyGPS 1.1.1 [2022-04] - minor fixes"),
