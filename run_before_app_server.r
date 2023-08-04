@@ -11,38 +11,42 @@ library(data.table)
 #library(png)
 rm(list = ls(all = TRUE))
 
-all_sig=fread("./03_eval/metal_eGFR_meta1.TBL.Indep.500k.5e8.indep_egfr_lowering.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-indepX=fread("./03_eval/metal_eGFR_meta1.TBL.Indep.500k.5e8.indepX_edited_MHC-tw.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-cred_var=read.table("./clean_GPS/05_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-locus_table=read.table("./clean_GPS/04_locus_table/locus_table_cys_bun.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-signal_table=read.table("./clean_GPS/06_signal_table/signal_table_cred_var.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-CADD=read.table("./clean_GPS/10_protein_altering/results/cadd_in_cred_var.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-
-NEPTUNE_glo=fread("./clean_GPS/08_eQTLs/neptune/cred_var_with_nephQTL_glomerular.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-NEPTUNE_tub=fread("./clean_GPS/08_eQTLs/neptune/cred_var_with_nephQTL_tubulointerstitial.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+all_sig=fread("./metal_eGFR_meta1.TBL.Indep.500k.5e8.indep_egfr_lowering.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+indepX=fread("./metal_eGFR_meta1.TBL.Indep.500k.5e8.indepX_edited_MHC-tw.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+cred_var=read.table("./05_cred_var/all_cred_var_99.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+locus_table=read.table("./04_locus_table/locus_table_cys_bun.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+signal_table=read.table("./06_signal_table/signal_table_cred_var.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+CADD=read.table("./10_protein_altering/results_2023-05-22/cadd_in_cred_var.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+NEPTUNE_glo=fread("./08_eQTLs/neptune/cred_var_with_nephQTL_glomerular.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+NEPTUNE_tub=fread("./08_eQTLs/neptune/cred_var_with_nephQTL_tubulointerstitial.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 NEPTUNE_tub=NEPTUNE_tub[which(!(is.na(NEPTUNE_tub$Approved.symbol))),]
-susztak_glo=fread("./clean_GPS/08_eQTLs/susztak/cred_var_with_nephQTL_glomerular.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-susztak_tub=fread("./clean_GPS/08_eQTLs/susztak/cred_var_with_nephQTL_tubulointerstitial.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-GTEx_eQTL=fread("./clean_GPS/08_eQTLs/gtex/all_cred_var_with_gtex.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
-GTEx_sQTL=fread("./clean_GPS/09_sQTLs/gtex/all_cred_var_with_gtex.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+susztak_glo=fread("./08_eQTLs/susztak/cred_var_with_nephQTL_glomerular.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+susztak_tub=fread("./08_eQTLs/susztak/cred_var_with_nephQTL_tubulointerstitial.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
 
-MGI=read.table( "./MGI_lookup/genes_and_pheno/MGI_table_kidney.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE, fill=TRUE, quote="",comment="")
-OMIM=read.table("./OMIM/OMIM_Groopman_combined/all_kidney_genes_sorted_nearly_without_duplicates_ks.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-ADTKD=read.table("./wiesener/all_genes_with_classification.txt", sep = "\t", header = T, stringsAsFactors = F)
-coloc_tub=read.table( "./lmm/coloc/coloc_tubulo.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-coloc_glo=read.table( "./lmm/coloc/coloc_glomerulus.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-GPS=read.table("./clean_GPS/07_GPS/table_for_GPS_signal_based.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE)
+GTEx_eQTL=fread("./08_eQTLs/gtex/all_cred_var_with_gtex.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+GTEx_sQTL=fread("./09_sQTLs/gtex/all_cred_var_with_gtex.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
-DM_decline = read.table("./GPS_App/DM_decline_effects_withStanzickId_mg_clean.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE)
-drugability = read.table("./clean_GPS/11_drugability/targets_drugs_diseases_in_GPS.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE, comment="", quote="",fill=TRUE)
+
+MGI=read.table( "./MGI_lookup/genes_and_pheno/MGI_table_kidney.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE, fill=TRUE, quote="",comment="") #raw data
+OMIM=read.table("./OMIM/OMIM_Groopman_combined/all_kidney_genes_sorted_nearly_without_duplicates_ks.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE) #raw data improved
+ADTKD=read.table("./all_genes_with_classification.txt", sep = "\t", header = T, stringsAsFactors = F) # raw data from manuscript
+coloc_tub=read.table( "./coloc/results_T/coloc_tubulo.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+coloc_glo=read.table( "./coloc/results_G/coloc_glomerulus.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+GPS=read.table("./07_GPS/table_for_GPS_signal_based.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE)
+
+DM_decline = read.table("./DM_decline_effects_withStanzickId_mg_clean.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE) # manually curated
+DM_stats = read.table("./12_DM/DM_and_noDM_statistics_for_cred_vars.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE)
+drugability = read.table("./11_drugability/targets_drugs_diseases_in_GPS_marked_kidney_drugs.txt", header=TRUE, sep = "\t", stringsAsFactors=FALSE, comment="", quote="",fill=TRUE)
+
+
 
 ### Gene Name Reference
-genes = fread( "./clean_GPS/inputs/glist.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+genes = fread( "./inputs/glist.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
 genes_sorted <- genes[order(genes$Chr, genes$Pos1), ]
 
-real_genes = fread( "./clean_GPS/inputs/genes_an_ids.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
+real_genes = fread( "./inputs/genes_an_ids.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE,  data.table = FALSE)
 
 print("file load finished")
 
@@ -68,7 +72,7 @@ for(i in 1:nrow(MGI)){
 MGI = merge(MGI[,c('phenotype','human_symbol')],GPS[,c('Gene','locus_id')], by.x="human_symbol", by.y="Gene", all.x=FALSE, all.y=FALSE)
 if(any(duplicated(MGI))) MGI=MGI[-which(duplicated(MGI)),]
 MGI_show=MGI[,c('human_symbol','phenotype','locus_id')]
-names(MGI_show)=c("Gene", "Locus ID", "Phenotype in mouse")
+names(MGI_show)=c("Gene", "Phenotype in mouse", "Locus ID")
 
 
 ###prepare human pheno:
@@ -134,7 +138,7 @@ for(i in 1:nrow(ADTKD)){
 }
 
 # add MIM numberr and OMIM links:
-MIM_number=read.table("./OMIM/OMIM_gene_pheno/genemap2_edited.txt", header = TRUE,  sep="\t", stringsAsFactors = FALSE, quote="", fill=TRUE)
+MIM_number=read.table("/stk05236/OMIM/OMIM_gene_pheno/genemap2_edited.txt", header = TRUE,  sep="\t", stringsAsFactors = FALSE, quote="", fill=TRUE)
 MIM_number$Gene.Symbols[grep(",", MIM_number$Gene.Symbols)]=toupper(MIM_number$Approved.Symbol[grep(",", MIM_number$Gene.Symbols)])
 for(i in 1:nrow(MIM_number)){
   
@@ -163,6 +167,29 @@ names(OMIM_MIM)=c("Gene*","Genetic disorder with kidney phenotype", "Source**", 
 
 #### prepare eQTL tables:
 print("eQTLs")
+# # prepare gtex
+# if(any(duplicated(GTEx_eQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")]))) GTEx_eQTL=GTEx_eQTL[-which(duplicated(GTEx_eQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")])),]
+# if(any(duplicated(GTEx_sQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")]))) GTEx_sQTL=GTEx_sQTL[-which(duplicated(GTEx_sQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")])),]
+# 
+# for(i in 1:nrow(GTEx_eQTL)){
+#   
+#   if(!any(GTEx_eQTL$gene[i]==real_genes$Approved.symbol) & any(GTEx_eQTL$gene[i]==real_genes$genes)){
+#     
+#     GTEx_eQTL$gene[i]=real_genes$Approved.symbol[which(real_genes$genes==GTEx_eQTL$gene[i])[1]]
+#   }
+# }
+# for(i in 1:nrow(GTEx_sQTL)){
+#   
+#   if(!any(GTEx_sQTL$gene[i]==real_genes$Approved.symbol) & any(GTEx_sQTL$gene[i]==real_genes$genes)){
+#     
+#     GTEx_sQTL$gene[i]=real_genes$Approved.symbol[which(real_genes$genes==GTEx_sQTL$gene[i])[1]]
+#   }
+# }
+# 
+# ###duplicate entfernen:
+# #rsid,variant_id,gene,tissue
+# if(any(duplicated(GTEx_eQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")]))) GTEx_eQTL=GTEx_eQTL[-which(duplicated(GTEx_eQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")])),]
+# if(any(duplicated(GTEx_sQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")]))) GTEx_sQTL=GTEx_sQTL[-which(duplicated(GTEx_sQTL[,c("rs_id_dbSNP151_GRCh38p7","variant_id","gene","tissue")])),]
 
 
 gtex_without_kidney = GTEx_eQTL[which(GTEx_eQTL$tissue != "Kidney_Cortex"),]
@@ -219,9 +246,9 @@ cred_var_show$rsid=paste(c(rep("<a href=\"https://www.ncbi.nlm.nih.gov/snp/",nro
 names(cred_var_show)=c("RSID*","Chr", "Pos","EA**","EAF***", "Effect conditioned","StdErr conditioned", "P-Value conditioned", "N","PPA","cppa","ci95","ci99","Locus ID","Signal ID","MarkerName", "Allele1", "OA","Effect unconditioned", "StdErr unconditioned", "P-Value unconditioned")
 cred_var_show=cred_var_show[,c('RSID*','Locus ID','Signal ID','PPA','N','EA**','OA','EAF***','Effect conditioned','StdErr conditioned','P-Value conditioned','Effect unconditioned','StdErr unconditioned','P-Value unconditioned','Chr','Pos')]
 cred_var_show[,which(lapply(cred_var_show,class)=="numeric")]=lapply(cred_var_show[,which(lapply(cred_var_show,class)=="numeric")], signif, digits=2)
-
+cred_var$chr_pos = paste(cred_var$chr, cred_var$pos, sep=":") #prepare search chr:pos
 #files for locuszoom
-lz_files=list.files("./GPS_App/App_test/www")
+lz_files=list.files("/stk05236/GPS_App/App_test/www")
 #lz_files=lz_files[-1]
 locus_id_files=c()
 for(i in 1:length(lz_files)){
@@ -257,10 +284,10 @@ susztak_glo_show=susztak_glo[,-which(names(susztak_glo)%in%c("region_id","signal
 susztak_tub_show=susztak_tub[,-which(names(susztak_tub)%in%c("region_id","signal_id"))]
 GTEx_eQTL_show=GTEx_eQTL[,-which(names(GTEx_eQTL)%in%c("region_id","signal_id"))]
 gtex_without_kidney_show=gtex_without_kidney
-
+#gtex_without_kidney[,c(2:length(names(gtex_without_kidney)))]<-NULL # save some workspace
 GTEx_sQTL_show=GTEx_sQTL[,-which(names(GTEx_sQTL)%in%c("region_id","signal_id"))]
 sqtl_without_kidney_show=sqtl_without_kidney
-
+#sqtl_without_kidney[,c(2:length(names(sqtl_without_kidney)))]<-NULL # save some workspace
 names(NEPTUNE_glo_show)=c("RSID","PPA","Chr","Pos","Affected gene", "Other allele", "Effect allele*", "Effect on expression", "StdErr", "P-Value","EAF")
 names(NEPTUNE_tub_show)=names(NEPTUNE_glo_show)
 names(susztak_glo_show)=names(NEPTUNE_glo_show)
@@ -274,9 +301,9 @@ NEPTUNE_tub_show['Effect direction on expression']=ifelse(NEPTUNE_tub_show$`Effe
 susztak_glo_show['Effect direction on expression']=ifelse(susztak_glo_show$`Effect on expression`>0,"upregulating","downregulating")
 susztak_tub_show['Effect direction on expression']=ifelse(susztak_tub_show$`Effect on expression`>0,"upregulating","downregulating")
 GTEx_eQTL_show['Effect direction on expression']=ifelse(GTEx_eQTL_show$`Effect on expression`>0,"upregulating","downregulating")
-
+# GTEx_sQTL_show['Effect direction']=ifelse(GTEx_sQTL_show$`Effect on splicing`>0,"upregulating","downregulating")
 gtex_without_kidney_show['Effect direction on expression']=ifelse(gtex_without_kidney_show$`Effect on expression`>0,"upregulating","downregulating")
-
+# sqtl_without_kidney_show['Effect direction']=ifelse(sqtl_without_kidney_show$`Effect on splicing`>0,"upregulating","downregulating")
 
 NEPTUNE_glo_show=NEPTUNE_glo_show[,c('RSID','PPA','Affected gene','Effect allele*','Other allele','EAF','Effect direction on expression','Effect on expression','StdErr','P-Value','Chr','Pos')]
 NEPTUNE_tub_show=NEPTUNE_tub_show[,c('RSID','PPA','Affected gene','Effect allele*','Other allele','EAF','Effect direction on expression','Effect on expression','StdErr','P-Value','Chr','Pos')]
@@ -317,15 +344,21 @@ if(any(duplicated(CADD_show))) {
   CADD_show = CADD_show[-which(duplicated(CADD_show)),]
 }
 
-### prepare coloc
-coloc_tub=read.table( "./lmm/coloc/coloc_tubulo.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+## prepare DM statistics
 
-coloc_glo=read.table( "./lmm/coloc/coloc_glomerulus.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+DM_stats_show = DM_stats[,c("rsid","Allele1","Allele2","Freq1.dm","Effect.dm","StdErr.dm","P.value.dm","n.dm","Freq1.nodm","Effect.nodm","StdErr.nodm","P.value.nodm","n.nodm","pdiff")]
+names(DM_stats_show)=c("RSID", "Effect allele", "Other allele", "EAF in DM", "Effect in DM", "StdErr in DM", "P-Value in DM", "N in DM", "EAF in noDM", "Effect in noDM", "StdErr in noDM", "P-Value in noDM", "N in noDM", "P-Value difference between DM and no DM")
+
+
+### prepare coloc
+#coloc_tub=read.table( "/stk05236/lmm/coloc/coloc_tubulo.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+#coloc_glo=read.table( "/stk05236/lmm/coloc/coloc_glomerulus.txt",  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
 coloc_tub=coloc_tub[which(coloc_tub$PP_H4 >=0.80),]
 coloc_glo=coloc_glo[which(coloc_glo$PP_H4 >=0.80),]
 
-#correct genenames
+#	Gen-Namen anpassen
 #glom
 for(i in 1:nrow(coloc_glo)){
   
@@ -348,7 +381,7 @@ for(i in 1:nrow(coloc_tub)){
 drugability$INDICATI[which(is.na(drugability$INDICATI))] = "-"
 drugability_show=drugability[,c('gps_gene','human_gene_name','TARGNAME','TARGTYPE','DRUGNAME','Highest_status','MOA','INDICATI')]
 drugability_show$TARGNAME=paste(c(rep("<a href=\"http://db.idrblab.net/ttd/search/ttd/target?search_api_fulltext=",nrow(drugability_show))),drugability$gps_gene,c(rep("\" target=\"_blank\">", nrow(drugability_show))),drugability_show$TARGNAME,c(rep("</a>",nrow(drugability_show))),sep="")
-names(drugability_show)=c("Gene", "All respective target genes", "Taget name*", "Tagettype", "Drug name", "Highest drug status**", "Mode of action", "Disease/Indication")
+names(drugability_show)=c("Gene", "All respective target genes", "Target name*", "Targettype", "Drug name", "Highest drug status**", "Mode of action", "Disease/Indication")
 print("file preparation finished")
 
 ### generate GPS-table
@@ -375,17 +408,23 @@ for(i in 1:nrow(GPS)){
   }
   GPS[i,'Cys.BUN']=locus_table$cys_bun[which(locus_table$locus_id==GPS$locus_id[i])]
   GPS[i,'credible_variants_per_locus_signal'] = length(unique(cred_var$rsid[which(cred_var$region_id==GPS$locus_id[i]&cred_var$signal_id==GPS$signal_id[i])]))
-  if(any(GPS$Gene[i]==drugability$gps_gene)) {GPS[i,'drugable'] = "yes"}
-    else {GPS[i,'drugable'] = "no"}
+  if(any(GPS$Gene[i]==drugability$gps_gene[which(drugability$includes_kideny_disease)])){
+	GPS[i,'drugable'] = "yes for kidney disease"
+  }else {
+	if(any(GPS$Gene[i]==drugability$gps_gene[which(!drugability$includes_kideny_disease)])){
+		GPS[i,'drugable'] = "yes for other disease"
+	}else{GPS[i,'drugable'] = "no"}
+  }
   if(!i%%2000)print(i)
   }
 
-#columns DM, decline,  pathways
+#columns DM decline drugability pathways
 
 GPS['DM_effect']=rep("-",nrow(GPS))
 GPS['decline_effect']=rep("-",nrow(GPS))
+# GPS['drugable']=rep("-",nrow(GPS))
 # GPS['enriched_pathway']=rep("-",nrow(GPS))
-
+# 
 DM = DM_decline[grep("DM",DM_decline$Type),]
 decline = DM_decline[grep("decline",DM_decline$Type),]
 
@@ -398,7 +437,12 @@ for(i in 1:nrow(decline)){
   a= unlist(strsplit(decline$Stanzick.ID[i],".",fixed=T))
   GPS$decline_effect[which(GPS$locus_id==a[1] & GPS$signal_id==a[2])]=decline$Type[i]
 }
-
+max_ppa=c()
+for(i in 1:nrow(GPS)){
+  u=cred_var[which(cred_var$region_id==GPS$locus_id[i]&cred_var$signal_id==GPS$signal_id[i]),]
+  max_ppa[i]=signif(max(u$ppa) ,digits = 3)
+}
+GPS['max_PPA']=max_ppa
 
 
 # create GPS restricted to PPA>0.1
@@ -436,6 +480,7 @@ GPS_show=GPS[,c('Locus_name','locus_id','signal_id','Gene','distance_to_lead_var
 GPS_show$Gene=paste(c(rep("<a href=\"https://www.genecards.org/cgi-bin/carddisp.pl?gene=",nrow(GPS_show))),GPS$Gene,c(rep("\" target=\"_blank\">", nrow(GPS_show))),GPS$Gene,c(rep("</a>",nrow(GPS_show))),sep="")
 
 names(GPS_show)=c("Locus name**","Locus ID", "Signal ID", "Gene*", "Distance to locus lead variant","Chromosome","Position gene start","Position gene end", "eGFRcys or BUN validation", "# credible variants in signal","stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other deleterious variant","eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])","eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])","eQTL kidney cortex (GTEx)","eQTL other tissue (GTEx)","sQTL kidney cortex (GTEx)","sQTL other tissue (GTEx)","# kidney phenotypes in mouse","# kidney phenotypes in human", "Coloc in NEPTUNE tissue", "DM_effect", "decline_effect", "known_drug_target")
+GPS_show[,1]=paste("[",GPS_show[,1],"]",sep="")
 GPS_show[which(GPS_show[,1]=="[PDILT]"),1]="[UMOD-PDILT]"
 for(i in 1:nrow(GPS_show)){
   GPS_show[i,'Score']=11-length(which(GPS_show[i,c(11:21)]==0))
@@ -467,6 +512,7 @@ GPS_10_show=GPS_10[,c('Locus_name','locus_id','signal_id','Gene','distance_to_le
 GPS_10_show$Gene=GPS_show$Gene
 
 names(GPS_10_show)=c("Locus name**","Locus ID", "Signal ID", "Gene*", "Distance to locus lead variant","Chromosome","Position gene start","Position gene end", "eGFRcys or BUN validation", "# credible variants in signal","stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other deleterious variant","eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])","eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])","eQTL kidney cortex (GTEx)","eQTL other tissue (GTEx)","sQTL kidney cortex (GTEx)","sQTL other tissue (GTEx)","# kidney phenotypes in mouse","# kidney phenotypes in human", "Coloc in NEPTUNE tissue", "DM_effect", "decline_effect","known_drug_target")
+GPS_10_show[,1]=GPS_show[,1]
 GPS_10_show[which(GPS_10_show[,1]=="[PDILT]"),1]="[UMOD-PDILT]"
 for(i in 1:nrow(GPS_10_show)){
   GPS_10_show[i,'Score']=11-length(which(GPS_10_show[i,c(11:21)]==0))
@@ -492,6 +538,7 @@ GPS_10_show['max PPA']=max_ppa
 GPS_50_show=GPS_50[,c('Locus_name','locus_id','signal_id','Gene','distance_to_lead_variant','Chr','Start_of_gene','End_of_gene','Cys.BUN','credible_variants_per_locus_signal','stop.gained.stop.lost.non.synonymus','canonical.splice.noncoding.change.synonymous.splice.site','Cadd15_other','NEPTUNE_glomerulus','NEPTUNE_tubulointerstitium','GTEX_eQTL_kidney_tissue','GTEX_eQTL_any_other_tissue','GTEX_sQTL_kidney_tissue','GTEX_sQTL_any_other_tissue','MGI_mouse_kidney_phenotyp','OMIM_human_kidney_phenotype','coloc','DM_effect','decline_effect','drugable')]
 GPS_50_show$Gene=GPS_show$Gene
 names(GPS_50_show)=c("Locus name**","Locus ID", "Signal ID", "Gene*", "Distance to locus lead variant","Chromosome","Position gene start","Position gene end", "eGFRcys or BUN validation", "# credible variants in signal","stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other deleterious variant","eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])","eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])","eQTL kidney cortex (GTEx)","eQTL other tissue (GTEx)","sQTL kidney cortex (GTEx)","sQTL other tissue (GTEx)","# kidney phenotypes in mouse","# kidney phenotypes in human", "Coloc in NEPTUNE tissue", "DM_effect", "decline_effect","known_drug_target")
+GPS_50_show[,1]=GPS_show[,1]
 GPS_50_show[which(GPS_50_show[,1]=="[PDILT]"),1]="[UMOD-PDILT]"
 for(i in 1:nrow(GPS_50_show)){
   GPS_50_show[i,'Score']=11-length(which(GPS_50_show[i,c(11:21)]==0))
@@ -514,21 +561,21 @@ GPS_50_show['max PPA']=max_ppa
 
 
 # prepare filter options
-effector_genes_noppa = which(GPS$stop.gained.stop.lost.non.synonymus!=0|GPS$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS$NEPTUNE_glomerulus!=0|GPS$NEPTUNE_tubulointerstitium!=0|GPS$GTEX_eQTL_kidney_tissue!=0|GPS$GTEX_sQTL_kidney_tissue!=0)
-effector_genes_10ppa = which(GPS_10$stop.gained.stop.lost.non.synonymus!=0|GPS_10$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS_10$NEPTUNE_glomerulus!=0|GPS_10$NEPTUNE_tubulointerstitium!=0|GPS_10$GTEX_eQTL_kidney_tissue!=0|GPS_10$GTEX_sQTL_kidney_tissue!=0)
-effector_genes_50ppa = which(GPS_50$stop.gained.stop.lost.non.synonymus!=0|GPS_50$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS_50$NEPTUNE_glomerulus!=0|GPS_50$NEPTUNE_tubulointerstitium!=0|GPS_50$GTEX_eQTL_kidney_tissue!=0|GPS_50$GTEX_sQTL_kidney_tissue!=0)
+effector_genes_noppa = which(GPS$stop.gained.stop.lost.non.synonymus!=0|GPS$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS$Cadd15_other!=0|GPS$NEPTUNE_glomerulus!=0|GPS$NEPTUNE_tubulointerstitium!=0|GPS$GTEX_eQTL_kidney_tissue!=0|GPS$GTEX_sQTL_kidney_tissue!=0)
+effector_genes_10ppa = which(GPS_10$stop.gained.stop.lost.non.synonymus!=0|GPS_10$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS_10$Cadd15_other!=0|GPS_10$NEPTUNE_glomerulus!=0|GPS_10$NEPTUNE_tubulointerstitium!=0|GPS_10$GTEX_eQTL_kidney_tissue!=0|GPS_10$GTEX_sQTL_kidney_tissue!=0)
+effector_genes_50ppa = which(GPS_50$stop.gained.stop.lost.non.synonymus!=0|GPS_50$canonical.splice.noncoding.change.synonymous.splice.site!=0|GPS_50$Cadd15_other!=0|GPS_50$NEPTUNE_glomerulus!=0|GPS_50$NEPTUNE_tubulointerstitium!=0|GPS_50$GTEX_eQTL_kidney_tissue!=0|GPS_50$GTEX_sQTL_kidney_tissue!=0)
 kidney_genes = which(GPS$MGI_mouse_kidney_phenotyp!=0|GPS$OMIM_human_kidney_phenotype!=0)
 
 
 
 sourceDir <- getSrcDirectory(function(dummy) {dummy})
-
-links=scan(file = paste(sourceDir,"www/links_plots.txt",sep="/"), what="character")
+links=scan(file = paste(dummy,"www/links_plots.txt",sep="/"), what="character")
 links_id<-c()
 for(i in 1:length(links)){
   z=unlist(strsplit(links[i],"/"))
   links_id[i]=unlist(strsplit(z[6],"_"))[2]
 }
+
 
 
 workspace_image=paste(sourceDir,"data/workspace.RData", sep="/")
