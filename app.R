@@ -29,14 +29,14 @@ ui <-
   tags$p(list("This platform summarizes information on each of 5906 genes overlapping the 424 loci identified for ",
               tags$abbr(title="estimated glomerular filtration rate from serum creatinine",tags$b("eGFRcrea")), " based on a ",tags$abbr(title="genome-wide association studies","GWAS")," meta-analysis of ", tags$a(href="https://www.ukbiobank.ac.uk/", target="_blank", "UK Biobank data"), "and ", tags$a(href="https://ckdgen.imbi.uni-freiburg.de", target="_blank", "CKDGen consortium"), "data", tags$b("(n=1,201,909)"), 
          tags$strong(tags$a(href="https://www.nature.com/articles/s41467-021-24491-0#Sec31", target="_blank", "[Stanzick et al. Nat. Commun. 2021]")),
-         ". Focussed on European ancestry ",tags$b("(n=1,004,040)")," , 634 independent signals across the 424 loci were identified using approximate conditioned analysis. "
-         , "For each variant in these 634 signals, the posterior probability of association (PPA) was computed and, for each signal, a 99% credible set of variants was derived "
+         ". Focussed on European ancestry ",tags$b("(n=1,004,040)")," , 594 stable independent signals across the 424 loci were identified using approximate conditioned analysis. "
+         , "For each variant in these 594 signals, the posterior probability of association (PPA) was computed and, for each signal, a 99% credible set of variants was derived "
          ,"(i.e. smallest set of variants with >99% cumultative PPA). ",
          "Credible (set) variants are considered the most likely variants to drive the association signal (particularly those with high PPA).")),
   
    
   
-  ,
+  
   
   navbarPage(tags$p(HTML(paste(tags$b("G"),"ene",tags$b("P"),"rioriti",tags$b("S"),"ation", sep=""))),
              
@@ -106,7 +106,7 @@ ui <-
                            tags$h4("Specification of functional evidence for the searched gene (s) displayed in GPS table:",actionButton(inputId="question_GPS_gene",label="?",class="question")),
                            
                            
-                           div(class="CADD",checkboxGroupInput(inputId="columns1", label=span("Gene contains credible variant that is protein-relevant"),  selected = c(11:13),
+                           div(class="CADD",checkboxGroupInput(inputId="columns1", label=span("Gene contains credible set variant that is protein-relevant"),  selected = c(11:13),
                                                                inline = FALSE, width = NULL, choiceNames = c("stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other functional consequence with high predicted deleteriousness (CADD-Phred \u2265 15)"), choiceValues = c(11:13))),
                            
                            div(class="eqtl",checkboxGroupInput(inputId="columns2", label="Gene maps to credible variant that modulates gene expression (eQTLs) or splicing (sQTLs), FDR < 5%",  selected = c(14:19,22),
@@ -114,14 +114,14 @@ ui <-
                            
                            div(class="pheno",checkboxGroupInput(inputId="columns3", label="Gene has known kidney phenotype in mouse or human:",  selected = c(20,21),
                                                                 inline = FALSE, width = NULL, choiceNames = c("mouse (Mouse Genome Informatics, MGI)","human (online mendelian inheritance in man, OMIM, Groopman et al. [N.Engl.J.Med,2019], or Wopperer et al. [Kidney Int.,2022])"), choiceValues = c(20,21))),
-                           div(class="drug",checkboxGroupInput(inputId="columns4", label="Gene is known as drug target or to show a drug interaction:",  selected = c(25),
-                                                                inline = FALSE, width = NULL, choiceNames = c("Drug information"), choiceValues = c(25))),
+                           div(class="drug",checkboxGroupInput(inputId="columns4", label="Gene is known as drug target or to show a drug interaction:",  selected = c(25,26), #test with 26 for other indications
+                                                                inline = FALSE, width = NULL, choiceNames = c("Drug information (kidney diseases)","Drug information (other or missing indication)" ), choiceValues = c(25,26))),
                            tags$br(),
                            tags$h4("Specification of additional information",actionButton(inputId="question_details_gene",label="?",class="question")),
                            
                            
                            checkboxGroupInput(inputId="detail_evidence_locus_gene", label=NULL,  selected = NULL,
-                                              inline = FALSE, width = NULL, choiceNames = c("Locus information for loci containing the searched genes", "List of all credible variants in the locus containing the searched gene"), choiceValues = c("summary","cred_var")),
+                                              inline = FALSE, width = NULL, choiceNames = c("Locus information for loci containing the searched genes", "eGFR association statistics for all credible set variants in the locus","eGFR association statistics for all credible set variants in the locus separated by diabetes status"), choiceValues = c("summary","cred_var","dm_stat")),
                            
                            div(class="genelocuszoom",checkboxGroupInput(inputId="gene.locuszoom", label=NULL,  selected = NULL,
                                                                           inline = FALSE, width = NULL, choiceNames = c("Regional association plot of the eGFRcrea locus containing the searched gene (LocusZoom)"), choiceValues = c("locus_zoom")),
@@ -129,7 +129,7 @@ ui <-
                            ),
                            
                            tags$br(),
-                           tags$h5(tags$b("Restrict results to credible variants with a minimum PPA* of:")),
+                           tags$h5(tags$b("Restrict results to credible set variants with a minimum PPA* of:")),
                            numericInput(inputId="ppa", label=NULL, value =0, min=0, max=1, width="20%"),
                            tags$p("*PPA: posterior probability of the eGFRcrea association  (max. PPA 1.0)"),
                            
@@ -142,9 +142,10 @@ ui <-
                       
                       
                       useShinyjs(),
-                      verbatimTextOutput("testforme"),
+                      
                       shinyjs::hidden(        
-                        div(id="Gene_div",        
+                        div(id="Gene_div", 
+							tags$p(textOutput("testforme")),
                             tags$p(textOutput("namecheck_gene")),
                             
                             
@@ -206,11 +207,16 @@ ui <-
                                                 br(),
                                                 DT::dataTableOutput("omim_gene"),
                                                 hr())),
-                            shinyjs::hidden(div(id="div_drug_gene",tags$h4("Drugability or Interaction:", class="Output_header"),
-                                                textOutput("drug_gene_text"),
+                            shinyjs::hidden(div(id="div_drug_gene_kid",tags$h4("Drugability or Interaction (indication for kidney diseases):", class="Output_header"),
+                                                textOutput("drug_gene_kid_text"),
                                                 br(),
-                                                DT::dataTableOutput("drug_gene"),
+                                                DT::dataTableOutput("drug_gene_kid"),
                                                 hr())),
+							              shinyjs::hidden(div(id="div_drug_gene_oth",tags$h4("Drugability or Interaction (other indications):", class="Output_header"),
+							                                  textOutput("drug_gene_oth_text"),
+							                                  br(),
+							                                  DT::dataTableOutput("drug_gene_oth"),
+							                                  hr())),
                             shinyjs::hidden(div(id="div_summary",tags$h4("Summary of loci and signals containing the searched gene(s):", class="Output_header"),
                                                 textOutput("summary_text"),
                                                 br(),
@@ -221,6 +227,11 @@ ui <-
                                                 br(),
                                                 DT::dataTableOutput("cred_var_gene"),
                                                 hr())),
+              							shinyjs::hidden(div(id="div_dm_stat_gene",tags$h4("eGFR association statistics separated by diabetes status for all credible variants in the locus containing the searched gene:", class="Output_header"),
+              							                    p("Shown are results from GWAS meta-analyses in European ancestry."),
+              							                    br(),
+              							                    DT::dataTableOutput("dm_stat_gene"),
+              							                    hr())),
                             shinyjs::hidden(div(id="div_locus_zoom_gene",tags$h4("Locus Zoom Plot:", class="Output_header"),
                                                 textOutput("LocusZoom_gene_text"),
                                                 uiOutput("plot_download_links_gene"),
@@ -232,18 +243,18 @@ ui <-
              ),
              tabPanel("Variants",
                       p(tags$h3("SNP Search",actionButton(inputId="question_SNP",label="?",class="question"),style="display:inline")),
-                      p("Search for SNPs which are associated with log(eGFRcrea) at P<5E-8 (all ancestries, unconditioned, n=1,201,909) or for SNPs being a credible variant for any of the 634 signals (European ancestry, conditioned, n=1,004,040):"),
+                      p("Search for SNPs which are associated with log(eGFRcrea) at P<5E-8 (all ancestries, unconditioned, n=1,201,909) or for SNPs being a credible variant for any of the 594 signals (European ancestry, conditioned, n=1,004,040):"),
                       useShinyjs(),
                       sidebarLayout(
                       
                       sidebarPanel(
                         
-                        textInput(inputId="snp", label="Single SNP search", value=NULL, placeholder = "rs12345"),
+                        textInput(inputId="snp", label="Single SNP search", value=NULL, placeholder = "rs12345 | chr:pos"),
                         # tags$h4(actionButton(inputId="question_SNP_batch",label="?",class="question"),"Upload SNP list:"),
                         # tags$br(),
                         tags$br(),
                         
-                        div(class="SNP-batch", textAreaInput("SNP_batch",label="Paste a list of RSIDs",value=NULL, placeholder= "rs1234, rs4567")),
+                        div(class="SNP-batch", textAreaInput("SNP_batch",label="Paste a list of RSIDs",value=NULL, placeholder= "rs1234, rs4567, chr:pos")),
                         
                         tags$hr(),
                         # Input: Select a file ----
@@ -351,6 +362,10 @@ ui <-
                                                 textOutput("sqtl_wo_kidney_text"),
                                                 DT::dataTableOutput("sqtl_wo_kidney"),
                                                 tags$hr())),
+                            shinyjs::hidden(div(id="div_dm_stat_snp",tags$h4("eGFR association statistics separated by diabetes status", class="Output_header"),
+                                                p("Shown are results from GWAS meta-analyses in European ancestry."),
+                                                DT::dataTableOutput("dm_stat_snp"),
+                                                tags$hr())),
                             shinyjs::hidden(div(id="div_locus_zoom_snp",tags$h4("Locus Zoom Plot:", class="Output_header"),
                                                 textOutput("LocusZoom_SNP_text"),
                                                 uiOutput("plot_download_links_snp"),
@@ -358,115 +373,162 @@ ui <-
                             
                         ))
              ),
+							tabPanel("Region",
+							         useShinyjs(),
+							         tags$h3("Region search",actionButton(inputId="question_region_search",label="?",class="question")),
+							         wellPanel(
+							           fluidRow(
+							             column(4, 
+							                    selectInput("Chromosome", label = "Chromosome", 
+							                                choices = list("Chromosome 1" = 1, "Chromosome 2" = 2, "Chromosome 3" = 3,"Chromosome 4" = 4,"Chromosome 5" = 5,"Chromosome 6" = 6,"Chromosome 7" = 7,"Chromosome 8" = 8,"Chromosome 9" = 9,"Chromosome 10" = 10,"Chromosome 11" = 11,"Chromosome 12" = 12,
+							                                               "Chromosome 13" = 13, "Chromosome 14" = 14,"Chromosome 15" = 15,"Chromosome 16" = 16,"Chromosome 17" = 17,"Chromosome 18" = 18,"Chromosome 19" = 19,"Chromosome 20" = 20,"Chromosome 21" = 21,"Chromosome 22" = 22), 
+							                                selected = 1)
+							             ),
+							             column(8,
+							                    numericInput(inputId="pos_start", label="Start of region [bp]", value = 0),
+							                    numericInput(inputId="pos_end", label="End of region [bp]", value = 0),
+							                    shinyjs::hidden(div(id="region_go_div",p(actionButton(inputId="region_go", label="go", class="go"),class="go"))),
+							             ),
+							           )
+							         ),
+							         #verbatimTextOutput("value"),
+							         shinyjs::hidden(
+							           div(id="region_div",
+							               span(textOutput("valid_gene_test")),
+							               bsCollapse(id="regionCollapse",multiple=TRUE,
+							                          bsCollapsePanel("Overlapping genetic eGFRcrea signals",span(textOutput("ov_loci_test"),style="color:red"),
+							                                          DT::dataTableOutput("ov_loci")
+							                          ),
+							                          bsCollapsePanel("GPS entries for genes in overlapping eGFRcrea loci", 
+							                                          shinyjs::hidden(
+							                                            div(id="ov_genes_down",
+							                                                DT::dataTableOutput("GPS_region_search"),
+							                                            )
+							                                          )
+							                          )
+							                          # ,
+							                          # bsCollapsePanel("Locus Zoom","hier mitunter", uiOutput("LocusZoom2"), textOutput("hier"))
+							               ))),
+							),
              tabPanel("GPS",
                       
-                      p(tags$h3("Gene Prioritisation - Overview",actionButton(inputId="question_region",label="?",class="question"))),
-                      
-                      tabsetPanel(
-                        tabPanel("no PPA-filter",
-                                 br(),
-                                 div(class="filteroptions",
-                                     
-                                       
-                                       selectInput("gps_filter_noppa", label = "Select filter for displayed genes",
-                                                   choices = list("All genes in eGFRcrea loci" = 0, "Likely effector genes" = 1, "Genes with kidney relevance" = 2, "Likely effector genes OR Genes with kidney relevance" = 3, "Likely effector genes with kidney relevance" = 4
-                                                                        ), 
-                                                   selected = 0)
-                                       ,
-                                       
-                                        selectInput("max_cred_set_size_noppa", label = "Select max. size of credible sets", 
-                                             choices = list("No filter for credible set size" = 1, "single variant sets" = 2, "max. 5 variants" = 3), 
-                                             selected = 1)
-                                     
+                      p(tags$h3("Gene Prioritisation - Overview",actionButton(inputId="question_GPS",label="?",class="question"))),
+                      fluidRow(
+                        div(class = "gps-container",
+                            column(3,  id = "gpscontainersignal", 
+                                   h4("1. Signal-filter:"),
+                                   h4("Restrict to signals with any of the following properties regarding the strength of statistical support:"),
+                                   checkboxInput(inputId = "signalppafilter", label ="The signal's credible set contains a variant with a postior probability of association (PPA) of:", value = FALSE),
+                                   div(id="gpsppafilter", 
+                                       uiOutput("signalppafilterdetail")
+                                       ),
+
+                                   checkboxInput(inputId = "signalsmall", label ="signal has a small credible set (1-5 variants)", value = FALSE),
+                                   div(id="nofiltersignal",checkboxInput(inputId = "signalnofilter", label =p("no filter (show all signals)"), value = TRUE) )
+                                   ,
+                                   tags$hr(),
+                                   
+                                   div(id="furthersignalfilter",h4("Restrict further to:"),
+                                   radioButtons(inputId = "signalcysbun", label="Signals located in a eGFRcys/BUN validated locus", inline = TRUE, choiceNames = c("yes", "no"), choiceValues = c(TRUE,FALSE), selected = FALSE),
+                                   
+                                   h4("Restrict further to:"),
+                                   radioButtons(inputId = "signalDM", label="Signals with differential association in individuals with diabetes vs. without diabetes", inline = TRUE, choiceNames = c("yes", "no"), choiceValues = c(TRUE,FALSE), selected = FALSE),
+                                   radioButtons(inputId = "signaldecline", label="Signals with association with eGFR decline", inline = TRUE, choiceNames = c("yes", "no"), choiceValues = c(TRUE,FALSE), selected = FALSE),
+                                   )
+
+                                   
+                            ),
+                            column(5, id = "gpscontainermap", 
+                                   div(fluidRow(
+                                     column(8, 
+                                            h4("2. Variant-to-gene mapping:"),
+                                            h4("Restrict to genes which are mapped to a credible set variant by any of the following properties:"),
+                                            div(class = "CADD",
+                                               checkboxGroupInput(inputId="genemapprot", 
+                                                                  label=span("Gene contains a credible set variant that is protein-relevant"),  
+                                                                  selected = NULL,
+                                                                  inline = FALSE, width = NULL, 
+                                                                  choiceNames = c("stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other functional consequence with high predicted deleteriousness (CADD-Phred \u2265 15)"), 
+                                                                  choiceValues = c(11:13)
+                                                                  ),
+                                                
+                                                ),
+                                            div(class = "eqtl",
+                                                checkboxGroupInput(inputId="genemapeqtl", 
+                                                                   label="Gene maps to a credible set variant that modulates gene expression (eQTLs) or splicing (sQTLs), FDR < 5%:",  
+                                                                   selected = NULL,
+                                                                   inline = FALSE, width = NULL, 
+                                                                   choiceNames = c("eQTL in glomerular tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitial tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex tissue (GTEx)","eQTL in other tissue (GTEx)","sQTL in kidney cortex tissue (GTEx)","sQTL in other tissue (GTEx)"), 
+                                                                   choiceValues = c(14:19)
+                                                                   ),
+                                            
+                                                )
+                                            
+                                            
                                      ),
-                                 div(class="overflow",DT::dataTableOutput("GPS"))
-                                 ),
-                        tabPanel("PPA > 10%",
-                                 br(),
-                                 div(class="filteroptions",
-                                     
-                                     
-                                     selectInput("gps_filter_10ppa", label = "Select filter for displayed genes",
-                                                 choices = list("All genes in eGFRcrea loci" = 0, "Likely effector genes" = 1, "Genes with kidney relevance" = 2, "Likely effector genes OR Genes with kidney relevance" = 3, "Likely effector genes with kidney relevance" = 4
-                                                 ), 
-                                                 selected = 0)
-                                     ,
-                                     
-                                     selectInput("max_cred_set_size_10ppa", label = "Select max. size of credible sets", 
-                                                 choices = list("No filter for credible set size" = 1, "single variant sets" = 2, "max. 5 variants" = 3), 
-                                                 selected = 1)
-                                     
-                                 ),
-                                 div(class="overflow",DT::dataTableOutput("GPS_10"))
-                        ),
-                        tabPanel("PPA > 50%",
-                                 br(),
-                                 div(class="filteroptions",
-                                     
-                                     
-                                     selectInput("gps_filter_50ppa", label = "Select filter for displayed genes",
-                                                 choices = list("All genes in eGFRcrea loci" = 0, "Likely effector genes" = 1, "Genes with kidney relevance" = 2, "Likely effector genes OR Genes with kidney relevance" = 3, "Likely effector genes with kidney relevance" = 4
-                                                 ), 
-                                                 selected = 0)
-                                     ,
-                                     
-                                     selectInput("max_cred_set_size_50ppa", label = "Select max. size of credible sets", 
-                                                 choices = list("No filter for credible set size" = 1, "single variant sets" = 2, "max. 5 variants" = 3), 
-                                                 selected = 1)
-                                     
-                                 ),
-                                 div(class="overflow",DT::dataTableOutput("GPS_50"))
+                                     column(4, id="ppafiltergenemap", br(), uiOutput("detail.genemap.ppa"),
+                                            
+                                            )
+                                   )),
+                                   br(),
+                                   div(id="nofiltermap",checkboxInput(inputId = "mapnofilter", label =p("no filter (show all genes in selected signals)"), value = TRUE) )
+                                   
+                            ),
+                            column(3, id = "gpscontainerfilter", 
+                                   h4("3. Gene-to-phenotype mapping:"), 
+                                   h4("Restrict to genes with any of the following properties:"),
+                                   div(class = "pheno",
+                                       checkboxGroupInput(inputId = "genelistpheno", 
+                                                          label="Kidney phenotypes",
+                                                          choiceNames = c("Gene has known kidney phenotypes in mouse models (Mouse Genome Informatics, MGI)","Gene is described to cause a human disease with kidney phenotype (online mendelian inheritance in man, OMIM, Groopman et al. [N.Engl.J.Med,2019], or Wopperer et al. [Kidney Int.,2022])"),
+                                                          choiceValues = c("mouse","human"), selected=NULL),
+                                       ),
+                                   div(class = "drug",
+                                       checkboxGroupInput(inputId = "genelistdrug",
+                                                          label = "Drug information",
+                                                          choiceNames = c("Gene is a known drug target for kidney diseases (Therapeutic Target Database)","Gene is a known drug target for any other disease or with unspecific indication (Therapeutic Target Database)"),
+                                                          choiceValues = c("kidney", "other"),
+                                                          selected = NULL
+                                         
+                                       )),
+                                   div(id="nofiltergenelist",checkboxInput(inputId = "genelistnofilter", label =p("no filter (show all genes in selected signals)"), value = TRUE))
+                            )
                         )
-                      )
+                      ),
+                      br(),
+                      actionButton(inputId="gpsgo", label="Go prioritize!"),
+                      br(),
+                      tags$hr(),
+                      verbatimTextOutput("GPS_datadescription"),
+                      
+                      div(class="overflow",DT::dataTableOutput("GPS")),
+                      br(),
+                      div(downloadButton("downloadGPSTable", "Download Results"), p("Cave: filtering via column headers has no impact on the downloaded table", style="color: red;")),
+                      br(),
+                      div(class="genesInGPS", textOutput("GPS_Genes1")),
+                      br()
+                      
+                      
                       #tags$br(),
                       
                       
              ),
              
-             tabPanel("Region",
-                      useShinyjs(),
-                      tags$h3("Region search",actionButton(inputId="question_region_search",label="?",class="question")),
-                      wellPanel(
-                        fluidRow(
-                          column(4, 
-                                 selectInput("Chromosome", label = "Chromosome", 
-                                             choices = list("Chromosome 1" = 1, "Chromosome 2" = 2, "Chromosome 3" = 3,"Chromosome 4" = 4,"Chromosome 5" = 5,"Chromosome 6" = 6,"Chromosome 7" = 7,"Chromosome 8" = 8,"Chromosome 9" = 9,"Chromosome 10" = 10,"Chromosome 11" = 11,"Chromosome 12" = 12,
-                                                            "Chromosome 13" = 13, "Chromosome 14" = 14,"Chromosome 15" = 15,"Chromosome 16" = 16,"Chromosome 17" = 17,"Chromosome 18" = 18,"Chromosome 19" = 19,"Chromosome 20" = 20,"Chromosome 21" = 21,"Chromosome 22" = 22), 
-                                             selected = 1)
-                          ),
-                          column(8,
-                                 numericInput(inputId="pos_start", label="Start of region [bp]", value = 0),
-                                 numericInput(inputId="pos_end", label="End of region [bp]", value = 0),
-                                 shinyjs::hidden(div(id="region_go_div",p(actionButton(inputId="region_go", label="go", class="go"),class="go"))),
-                          ),
-                        )
-                      ),
-                      #verbatimTextOutput("value"),
-                      shinyjs::hidden(
-                        div(id="region_div",
-                            span(textOutput("valid_gene_test")),
-                            bsCollapse(id="regionCollapse",multiple=TRUE,
-                                 bsCollapsePanel("Overlapping genetic eGFRcrea signals",span(textOutput("ov_loci_test"),style="color:red"),
-                                                 DT::dataTableOutput("ov_loci")
-                                                 ),
-                                 bsCollapsePanel("GPS entries for genes in overlapping eGFRcrea loci", 
-                                                 shinyjs::hidden(
-                                                   div(id="ov_genes_down",
-                                                       DT::dataTableOutput("GPS_region_search"),
-                                                       )
-                                                 )
-                                 )
-                                 # ,
-                                 # bsCollapsePanel("Locus Zoom","hier mitunter", uiOutput("LocusZoom2"), textOutput("hier"))
-                      ))),
-             ),
+             
              
 						tabPanel("Documentation & Help",
 						         
 						         navlistPanel(
 						         tabPanel("Release history",
 						                h3("Release history"),
-						                p("KidneyGPS 1.3.0 [2022-11] - integration of drug target and interaction information for all genes from Therapeutic Target Database"),
+						                p("KidneyGPS 2.3.0 [2023-08] - Integration of eGFR association statistics separated by diabetes status for all credible set variants."),
+						                p("KidneyGPS 2.2.0 [2023-08] - Re-organisation of the GPS tab with extendend filter options."),
+						                p("KidneyGPS 2.1.0 [2023-07] - separated drug information by indication for kidney diseases according to the ICD-11 codes."),
+						                p("KidneyGPS 2.0.1 [2023-07] - enable variant-search for chromosome and position (based on GRCh37)."),
+										        p("KidneyGPS 2.0 [2023-07] - reanalysis of the 424 loci regarding stability of independent signals. 594 stable independent signals were identified using stepwise conditioning with GCTA. Credible sets were re-calculated for these signals resulting in 35,885 credible set variants."),
+										        p("KidneyGPS 1.3.1 [2023-02] - additional summary numbers in \"GPS tab\" below GPS table; in minor fixes"),
+						                p("KidneyGPS 1.3.0 [2022-11] - integration of drug target and interaction information for all genes from Therapeutic Target Database"),																				 
+						                p("KidneyGPS 1.2.0 [2022-11] - integration of drug target and interaction information for all genes from Therapeutic Target Database"),
 						                p("KidneyGPS 1.2.0 [2022-10] - integration of ADTKD genes, DM-status interaction and eGFRcrea decline association; loosening of the CADD-Phred cutoff for protein-altering variants with a clear functional cosequence"),
 						                p("KidneyGPS 1.1.2 [2022-06] - small layout changes"),
 						                p("KidneyGPS 1.1.1 [2022-04] - minor fixes"),
@@ -474,6 +536,75 @@ ui <-
 						                p("first publication KidneyGPS 1.0 [2022-03]"),
 						                hr()
 						                ),
+						         tabPanel("Step-by-step guide",
+						                  h3("Gene Prioritisation (GPS) – How to Generate a List of Genes with Defined Properties:"),
+						                  br(),
+						                  p("The GPS tab in KidneyGPS comprises three filter divisions, with the GPS Table displaying the results of the applied filtering."),
+						                  h4("Filtering sections:"),
+						                  tags$ol(
+						                    tags$li(
+						                      h5("Singal-filter:"),
+						                      p("The first division enables you to narrow down the GPS table to signals with specific properties."),
+						                      tags$ul(
+						                        tags$li(
+						                          p("Filter for the strength of statistical support: You can filter signals based on the posterior probability of association (PPA) of a signal’s credible set variants. 
+						                            Each credible set is thought to contain the variant causal for the association with a 99% probability. 
+						                            For instance, selecting PPA>99% will show signals containing only one credible set variant. 
+						                            PPA>50% indicates a high probability of one variant being causal, and PPA>10% excludes signals with only low probability variants. 
+						                            Alternatively, you can filter for signals with a small credible set of five or fewer variants. 
+						                            If the PPA filter and the small-set filter are selected, signals only have to meet one of these criteria. The 'no filter' option displays all signals.")
+						                        ),
+						                        tags$li(
+						                          p("Further restrictions on signals: 
+						                            You can exclude signals not validated for eGFRcys or BUN, focus on signals with different associations in individuals with and without diabetes, or consider signals associated with eGFR decline.")
+						                        )
+						                      )
+						                    ),
+						                    tags$li(
+						                      h5("Variant-to-gene mapping:"),
+						                      p("The second division deals with variant-to-gene mapping. Not all genes in an eGFRcrea locus are necessarily mapped by a credible set variant. This filtering builds on the first division."),
+						                      tags$ul(
+						                        tags$li(
+						                          p("Single feature selection: Choose one blue or orange feature to display genes mapped by a credible set variant with that specific property.")
+						                        ),
+						                        tags$li(
+						                          p("Multiple feature selection: Select multiple blue or orange features to show genes with non-zero entries in any respective GPS column.")
+						                        ),
+						                        tags$li(
+						                          p("Additional mapping restrictions: If you choose any blue or orange feature, you can further restrict mapped credible set variants based on the strength of statistical support of the mapped variant. 
+						                            As in division 1 you can select PPA and small set criteria. 
+						                            If both PPA and small set criteria are chosen, the mapped variant must satisfy at least one of them.")
+						                        ),
+						                        tags$li(
+						                          p("To display all genes, regardless of credible set mapping, select the 'no filter' option. Note: These genes may not directly relate to kidney function and could simply be located in an eGFRcrea locus by chance.")
+						                        )
+						                      )
+						                    ),
+						                    tags$li(
+						                      h5("Gene-to-phenotype mapping:"),
+						                      p("The third filter division allows you to filter the gene list based on gene properties, in addition to the filtering in the first and second divisions."),
+						                      tags$ul(
+						                        tags$li(
+						                          p("Kidney phenotypes: Choose from two options to restrict the gene list to genes with either a kidney phenotype in mouse models or genes known to cause human genetic diseases with kidney phenotypes. 
+						                            If both options are selected, the gene must satisfy at least one of them.")
+						                        ),
+						                        tags$li(
+						                          p("Drug information options: These options refer to drugs listed in the Therapeutic Target Database (TTD), separated by indications. 
+						                            One option filters genes targeted by drugs for any kidney disease, and the other filters genes targeted by drugs for other diseases or with unspecified indications.")
+						                        ),
+						                        tags$li(
+						                          p("If multiple options are selected, genes must only satisfy one of the chosen criteria.")
+						                        )
+						                      )
+						                    )
+						                  ),
+						                  br(),
+						                  h4("The GPS Table:"),
+						                  p("The GPS Table shows the results of the applied filters on signals and genes. Blue and orange columns contain numbers representing the count of credible set variants targeting the respective gene through that specific feature. 
+						                    If a gene is located in a locus with multiple independent signals (without mapping filtering) or mapped by credible set variants from different association signals, multiple rows for that gene may be included."),
+						                  br(),
+						                  p("The number of genes meeting the filter criteria is displayed below the GPS Table.")
+						                  ),
 						                
 						         tabPanel("Data Sources",
 						                h3("Data Sources:"),
@@ -557,13 +688,25 @@ ui <-
 						                hr()
 						         
 						         ),
+						         tabPanel("Privacy and data security",
+						                 h3("Privacy and data security"),
+						                 div(
+						                   p("We take the privacy and security of your data very seriously. We want to assure you that when you use our application, your data is handled with the utmost care and protection."),
+						                   p("Data Collection: We do not collect any user data, including IP addresses, searched genes, or variants. Your interactions with the application remain completely anonymous."),
+						                   p("Data Logging: We do not log any data queries or actions performed by users within the application. Your usage remains private and confidential."),
+						                   p("Data Sharing: We do not share any user data or information with third parties. Your data is strictly used within the application to provide the intended functionality."),
+						                   p("Data Access: Only authorized personnel have access to the application's underlying infrastructure, and they are bound by strict confidentiality agreements."),
+						                   p("Encryption: To further enhance data security, all data transmissions between your device and our server are encrypted using industry-standard protocols.")
+						                 ),
+						                 hr()
+						                 ),
 						         tabPanel("Citation",
 						         h3("Citation"),
 						         p("Did you use KidneyGPS for a publication? We would appreciate if you cite us: \"KidneyGPS: an easily accessible web application to prioritize kidney function genes and variants based on evidence from genome-wide association studies\"  and the original data sources appropriately."),
 						         hr()
 						         ),
 						         tabPanel("Contact",h3("Contact"),
-						                  p("If you have any questions not answered by the \"Documentation & Help\" section, please contact: Kira Stanzick ", tags$a(href="mailto:kira-julia.stanzick@klinik.uni-regensburg.de", "(kira-julia.stanzick@klinik.uni-regensburg.de)")),
+						                  p("If you have any questions not answered by the \"Documentation & Help\" section, please feel free to ask your question in this user forum: ",tags$a(href="https://github.com/kjstanzick/KidneyGPS/discussions/categories/q-a", "KidneyGPS at GitHub") ,"or contact: Kira Stanzick ", tags$a(href="mailto:kira-julia.stanzick@klinik.uni-regensburg.de", "(kira-julia.stanzick@klinik.uni-regensburg.de)")),
 						                  hr()
 						                  
 						                  ),
@@ -622,7 +765,7 @@ server <- function(input, output, session) {
         th(colspan=3, 'Association with log(eGFRcrea) unconditioned'),
         th(rowspan=2,'Chr'),
         th(rowspan=2, class="pos hover",'Pos',span(class="poscomment","SNP position from GRCh37")),
-        ),
+      ),
       tr(
         lapply(c('beta', 'StdErr', 'P-value','beta', 'StdErr', 'P-value'), th)
       )
@@ -650,6 +793,25 @@ server <- function(input, output, session) {
       ),
       tr(
         lapply(c('beta', 'StdErr', 'P-value','beta', 'StdErr', 'P-value'), th)
+      )
+    )
+  ))
+  
+  sketchdmstatgene = htmltools::withTags(table(
+    class = 'display',
+    
+    thead(
+      tr(
+        th(rowspan=2, 'RSID'),
+        th(rowspan=2,'Effect allele'),
+        th(rowspan=2,'Other allele'),
+        th(colspan=5, 'Association of eGFRcrea in individuals with Diabetes'),
+        th(colspan=5, 'Association of eGFRcrea in individuals without Diabetes'),
+        th(rowspan=2,'P-Value of the difference in association between Diabetes and no Diabetes')
+      ),
+      tr(
+        lapply(c('EAF', 'beta', 'StdErr','P-value', 'N', 'EAF', 'beta', 'StdErr','P-value', 'N'), th)
+        
       )
     )
   ))
@@ -689,11 +851,9 @@ server <- function(input, output, session) {
         th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
         th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
         th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the locus lead variant is nominal significant (P<0.05) associated with concordent effect direction with ", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or ",tags$abbr(title="blood urea nitrogen","BUN")))),
-        th(rowspan = 2, class="DMwithcomment hover",'Signal interaction with DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
+        th(rowspan = 2, class="DMwithcomment hover",'Signal association depends on DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
         th(rowspan = 2, class="declinewithcomment hover",'Signal association with eGFRcrea decline', span(class="declinecomment",list( "Information whether the signal index variant (or a correlated variant) was established with annual eGFR-decline, Gorski et al. 2022"))),
         th(rowspan = 2, '# credible variants in signal'),
-        th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
-        th(rowspan = 2, 'overall gene score'),
         th(colspan = 3, class="CADD", span('# protein-relevant credible variants in the gene')),
         th(colspan = 6, class="eqtl", '# credible variants that modulate gene expression (eQTLs) or splicing (sQTLs), FDR < 5%'),
         th(rowspan = 2, class="eqtl", 'Coloc in NEPTUNE tissue'),
@@ -720,181 +880,593 @@ server <- function(input, output, session) {
   ))
   
   headerCallback <- "function( thead, data, start, end, display ) {
-  $(thead).closest('thead').find('th').eq(10).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(11).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(12).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(13).css('background-color', '#b3ffb3');
-  $(thead).closest('thead').find('th').eq(14).css('background-color', '#b3ffb3');
-  $(thead).closest('thead').find('th').eq(15).css('background-color', '#d9b3ff');
+  $(thead).closest('thead').find('th').eq(8).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(9).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(10).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(11).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(12).css('background-color', '#b3ffb3');
+  $(thead).closest('thead').find('th').eq(13).css('background-color', '#d9b3ff');
+  $(thead).closest('thead').find('th').eq(18).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(19).css('background-color', '#ccffff');
   $(thead).closest('thead').find('th').eq(20).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(21).css('background-color', '#ccffff');
-  $(thead).closest('thead').find('th').eq(22).css('background-color', '#ccffff');
+  $(thead).closest('thead').find('th').eq(21).css('background-color', '#ffdb99');
+  $(thead).closest('thead').find('th').eq(22).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(23).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(24).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(25).css('background-color', '#ffdb99');
   $(thead).closest('thead').find('th').eq(26).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(27).css('background-color', '#ffdb99');
-  $(thead).closest('thead').find('th').eq(28).css('background-color', '#ffdb99');
   }"
   
+  initComplete <- "function(settings, json) {
+                                                $('.dt-button.buttons-collection').css('width', 'auto');
+                                                $('.dt-button.buttons-collection select').css('width', '300px');
+                                                $('.dt-button.buttons-collection').css('min-width', '300px');
+                                              }"
   
-  eff_noppa_1 <- effector_genes_noppa[which(effector_genes_noppa%in%which(GPS$credible_variants_per_locus_signal==1))]
-  kid_1 <- kidney_genes[which(kidney_genes%in%which(GPS$credible_variants_per_locus_signal==1))]
-  eff_noppa_5 <- effector_genes_noppa[which(effector_genes_noppa%in%which(GPS$credible_variants_per_locus_signal<=5))]
-  kid_5 <- kidney_genes[which(kidney_genes%in%which(GPS$credible_variants_per_locus_signal<=5))]
   
-  filter_rows_gps <- reactiveValues( 'noppa' = c())
-  GPS_columns <- match(c('Gene*','Locus name**','Locus ID','Signal ID','eGFRcys or BUN validation','DM_effect','decline_effect','# credible variants in signal','max PPA','Score','stop-gained, stop-lost, non-synonymus','canonical splice, noncoding change, synonymous, splice site','other deleterious variant','eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL kidney cortex (GTEx)','eQTL other tissue (GTEx)','sQTL kidney cortex (GTEx)','sQTL other tissue (GTEx)','Coloc in NEPTUNE tissue','# kidney phenotypes in mouse','# kidney phenotypes in human','known_drug_target','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),names(GPS_show))
-  observe(
-          if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=c(1:nrow(GPS))}
-          else if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=effector_genes_noppa}
-          else if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=kidney_genes}
-          else if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=c(effector_genes_noppa,kidney_genes)}
-          else if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==1){filter_rows_gps$noppa=effector_genes_noppa[which(effector_genes_noppa%in%kidney_genes)]}
-          else if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=which(GPS$credible_variants_per_locus_signal==1)}
-          else if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=eff_noppa_1}
-          else if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=kid_1}
-          else if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=c(eff_noppa_1,kid_1)}
-          else if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==2){filter_rows_gps$noppa=eff_noppa_1[which(eff_noppa_1%in%kid_1)]}
-          else if(input$gps_filter_noppa ==0 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=which(GPS$credible_variants_per_locus_signal<=5)}
-          else if(input$gps_filter_noppa ==1 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=eff_noppa_5}
-          else if(input$gps_filter_noppa ==2 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=kid_5}
-          else if(input$gps_filter_noppa ==3 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=c(eff_noppa_5,kid_5)}
-          else if(input$gps_filter_noppa ==4 & input$max_cred_set_size_noppa==3){filter_rows_gps$noppa=eff_noppa_5[which(eff_noppa_5%in%kid_5)]}
-)
-    
   
-  observe
-  output$GPS <- renderDataTable({
+  observe({
+    if(input$signalppafilter){
+      output$signalppafilterdetail <- renderUI(
+        radioButtons(inputId = "signalhigh", 
+                     choiceNames = c("PPA >99% (most likely causal variants)", "PPA >50% (variants with high probability of being causal)", "PPA >10% (excluding variants with little probability of being causal)"),
+                     choiceValues = c(0.99, 0.5, 0.1),
+                     label =NULL,
+                     selected = 0.5)
+      )
+    }else{
+      output$signalppafilterdetail <- renderUI(
+        disabled(radioButtons(inputId = "signalhigh", 
+                     choiceNames = c("PPA >99% (most likely causal variants)", "PPA >50% (variants with high probability of being causal)", "PPA >10% (excluding variants with little probability of being causal)"),
+                     choiceValues = c(0.99, 0.5, 0.1),
+                     label =NULL,
+                     selected = 0.5))
+      )
+    }
     
     
-    datatable(
-      #GPS_show[filter_rows_gps$noppa,c(4,1:3,9,10,24,23,11:19,22,20,21,5:8)], rownames=FALSE, without DM/decline
-      GPS_show[filter_rows_gps$noppa,GPS_columns], rownames=FALSE, #with DM/decline
-
-        options = list(
-                    columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                    , scrollX=TRUE
-                    ,headerCallback = JS(headerCallback),
-                     dom = 'rtBip',
-                    buttons= list(c('copy', 'excel','csv'))
-                    
-
-        ),
-      extensions= 'Buttons',
-      class ='display',
-      filter = list(
-        position = 'top', clear = TRUE, plain = TRUE
-      ),
-      escape = FALSE,
-
-      caption = htmltools::tags$caption(
-        style = 'caption-side: bottom; text-align: left; font-weight: normal;',
-        '* Link to GeneCards, **nearest gene to locus lead-variant'),
-      container = sketch
-    )
   })
   
-  eff_10ppa_1 <- effector_genes_10ppa[which(effector_genes_10ppa%in%which(GPS$credible_variants_per_locus_signal==1))]
-  eff_10ppa_5 <- effector_genes_10ppa[which(effector_genes_10ppa%in%which(GPS$credible_variants_per_locus_signal==5))]
-  
-  filter_rows_gps <- reactiveValues("ppa10" = c())
-    observe(if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=c(1:nrow(GPS))}
-    else if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=effector_genes_10ppa}
-    else if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=kidney_genes}
-    else if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=c(effector_genes_10ppa,kidney_genes)}
-    else if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==1){filter_rows_gps$ppa10=effector_genes_10ppa[which(effector_genes_10ppa%in%kidney_genes)]}
-    else if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=which(GPS$credible_variants_per_locus_signal==1)}
-    else if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=eff_10ppa_1}
-    else if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=kid_1}
-    else if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=c(eff_10ppa_1,kid_1)}
-    else if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==2){filter_rows_gps$ppa10=eff_10ppa_1[which(eff_10ppa_1%in%kid_1)]}
-    else if(input$gps_filter_10ppa ==0 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=which(GPS$credible_variants_per_locus_signal<=5)}
-    else if(input$gps_filter_10ppa ==1 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=eff_10ppa_5}
-    else if(input$gps_filter_10ppa ==2 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=kid_5}
-    else if(input$gps_filter_10ppa ==3 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=c(eff_10ppa_5,kid_5)}
-    else if(input$gps_filter_10ppa ==4 & input$max_cred_set_size_10ppa==3){filter_rows_gps$ppa10=eff_10ppa_5[which(eff_10ppa_5%in%kid_5)]})
-    
-  
-  output$GPS_10 <- renderDataTable({
-    
-    
-    datatable(
-      GPS_10_show[filter_rows_gps$ppa10,GPS_columns], rownames=FALSE,
-      
-      options = list(
-        columnDefs = list(list(className = 'dt-left', targets = "_all"))
-        , scrollX=TRUE
-        ,headerCallback = JS(headerCallback),
-        dom = 'rtBip',
-        buttons= list(c('copy', 'excel','csv')),
-        autoWidth = TRUE
-        
-      ),
-      extensions= 'Buttons',
-      class ='display',
-      filter = list(
-        position = 'top', clear = TRUE, plain = TRUE
-      ),
-      escape = FALSE,
-      
-      caption = htmltools::tags$caption(
-        style = 'caption-side: bottom; text-align: left; font-weight: normal;',
-        '* Link to GeneCards, **nearest gene to locus lead-variant'),
-      container = sketch
-    )
+  observeEvent(input$signalppafilter,{
+    if(!(input$signalppafilter | input$signalsmall)){
+      updateCheckboxInput(session, "signalnofilter", value=TRUE, label = "no filter (show all signals)")
+    }
+    req(input$signalppafilter)
+    updateCheckboxInput(session, "signalnofilter", value=FALSE, label = "no filter (show all signals)")
   })
   
-  eff_50ppa_1 <- effector_genes_50ppa[which(effector_genes_50ppa%in%which(GPS$credible_variants_per_locus_signal==1))]
-  eff_50ppa_5 <- effector_genes_50ppa[which(effector_genes_50ppa%in%which(GPS$credible_variants_per_locus_signal==5))]
-  
-  filter_rows_gps <- reactiveValues( 'ppa50' = c())
-  
-  observe(if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=c(1:nrow(GPS))}
-    else if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=effector_genes_50ppa}
-    else if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=kidney_genes}
-    else if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=c(effector_genes_50ppa,kidney_genes)}
-    else if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==1){filter_rows_gps$ppa50=effector_genes_50ppa[which(effector_genes_50ppa%in%kidney_genes)]}
-    else if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=which(GPS$credible_variants_per_locus_signal==1)}
-    else if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=eff_50ppa_1}
-    else if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=kid_1}
-    else if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=c(eff_50ppa_1,kid_1)}
-    else if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==2){filter_rows_gps$ppa50=eff_50ppa_1[which(eff_50ppa_1%in%kid_1)]}
-    else if(input$gps_filter_50ppa ==0 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=which(GPS$credible_variants_per_locus_signal<=5)}
-    else if(input$gps_filter_50ppa ==1 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=eff_50ppa_5}
-    else if(input$gps_filter_50ppa ==2 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=kid_5}
-    else if(input$gps_filter_50ppa ==3 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=c(eff_50ppa_5,kid_5)}
-    else if(input$gps_filter_50ppa ==4 & input$max_cred_set_size_50ppa==3){filter_rows_gps$ppa50=eff_50ppa_5[which(eff_50ppa_5%in%kid_5)]})
-    
-  
-  output$GPS_50 <- renderDataTable({
-    
-    
-    datatable(
-      GPS_50_show[filter_rows_gps$ppa50,GPS_columns], rownames=FALSE,
-      
-      options = list(
-        columnDefs = list(list(className = 'dt-left', targets = "_all"))
-        , scrollX=TRUE
-        ,headerCallback = JS(headerCallback),
-        dom = 'rtBip',
-        buttons= list(c('copy', 'excel','csv'))
-        
-      ),
-      extensions= 'Buttons',
-      class ='display',
-      filter = list(
-        position = 'top', clear = TRUE, plain = TRUE
-      ),
-      escape = FALSE,
-      
-      caption = htmltools::tags$caption(
-        style = 'caption-side: bottom; text-align: left; font-weight: normal;',
-        '* Link to GeneCards, **nearest gene to locus lead-variant'),
-      container = sketch
-    )
+  observeEvent(input$signalsmall,{
+    if(!(input$signalppafilter | input$signalsmall)){
+      updateCheckboxInput(session, "signalnofilter", value=TRUE, label = "no filter (show all signals)")
+    }
+    req(input$signalsmall)
+    updateCheckboxInput(session, "signalnofilter", value=FALSE, label = "no filter (show all signals)")
   })
-                                
+  
+  observeEvent(input$signalnofilter,{
+    req(input$signalnofilter)
+    updateCheckboxInput(session, "signalppafilter", value=FALSE, label = "The signal's credible set contains a variant with posterior probability of association (PPA) of:")
+    updateCheckboxInput(session, "signalsmall", value=FALSE, label = "signal has a small credible set (1-5 variants)")
+  })
+  
+ 
+observe({
+    if (isTruthy(input$genemapprot) | isTruthy(input$genemapeqtl)) {
+      updateCheckboxInput(session, "mapnofilter", label = "no filter (show all genes in selected signals)", value = FALSE)
+      output$detail.genemap.ppa <- renderUI(
+              div(h4("Restrict mapping to credible set variants with any of the following properties regarding strength of statistical support:"),
+              checkboxInput(inputId = "mapppafilter", label ="Posterior probability of association (PPA):", value = TRUE),
+                                   div(id="gpsmapppafilter", 
+                                       uiOutput("mapppafilterdetail")
+              ),
+
+              checkboxInput(inputId = "mapsmall", label ="variant is contained in small credible set (1-5 variants)", value = TRUE),
+              div((checkboxInput(inputId = "nofiltermapppa", label =p("no filter (show all genes mapped by any credible set variant)"), value = FALSE)))
+              
+              )
+      )
+            
+    } else {
+      updateCheckboxInput(session, "mapnofilter", label = "no filter (show all genes in selected signals)", value = TRUE)
+          output$detail.genemap.ppa <- renderUI(
+            div(h4("Restrict mapping to credible set variants with any of the following properties regarding strength of statistical support:"),
+                disabled(checkboxInput(inputId = "mapppafilter", label ="Posterior probability of association (PPA):", value = FALSE)),
+                div(id="gpsmapppafilter", 
+                    uiOutput("mapppafilterdetail")
+                ),
+                
+                disabled(checkboxInput(inputId = "mapsmall", label ="variant is contained in small credible set (1-5 variants)", value = FALSE)),
+                div(disabled(checkboxInput(inputId = "nofiltermapppa", label =p("no filter (show all genes mapped by any credible set variant)"), value = TRUE)))
+            )
+          )
+      
+    }
+  })
+  
+observe({
+  output$mapppafilterdetail <- renderUI(
+    disabled(radioButtons(inputId = "maphigh", 
+                          choiceNames = c("PPA >99%", "PPA >50%", "PPA >10%"),
+                          choiceValues = c(0.99, 0.5, 0.1),
+                          label =NULL,
+                          selected = 0.5))
+  )
+  req(input$mapppafilter)
+  if(input$mapppafilter){
+    output$mapppafilterdetail <- renderUI(
+      radioButtons(inputId = "maphigh", 
+                   choiceNames = c("PPA >99%", "PPA >50%", "PPA >10%"),
+                   choiceValues = c(0.99, 0.5, 0.1),
+                   label =NULL,
+                   selected = 0.5)
+    )
+    
+  }else{
+    output$mapppafilterdetail <- renderUI(
+      disabled(radioButtons(inputId = "maphigh", 
+                            choiceNames = c("PPA >99%", "PPA >50%", "PPA >10%"),
+                            choiceValues = c(0.99, 0.5, 0.1),
+                            label =NULL,
+                            selected = 0.5 ))
+    )
+  } 
+})
+
+observeEvent(input$mapnofilter,{
+  req(input$mapnofilter)
+  updateCheckboxGroupInput(session,"genemapprot", 
+                           selected = NULL,
+                           choiceNames = c("stop-gained, stop-lost, non-synonymus","canonical splice, noncoding change, synonymous, splice site","other functional consequence with high predicted deleteriousness (CADD-Phred \u2265 15)"),
+                           choiceValues = c(11:13)
+                           
+  )
+  updateCheckboxGroupInput(session, "genemapeqtl", 
+                           selected = NULL,
+                           choiceNames = c("eQTL in glomerular tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitial tissue (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex tissue (GTEx)","eQTL in other tissue (GTEx)","sQTL in kidney cortex tissue (GTEx)","sQTL in other tissue (GTEx)"), 
+                           choiceValues = c(14:19)
+  )
+})
+
+observeEvent(input$nofiltermapppa,{
+  if(input$nofiltermapppa){
+  updateCheckboxInput(session,"mapppafilter", 
+                           value = FALSE
+                           
+  )
+  updateCheckboxInput(session, "mapsmall", 
+                           value=FALSE
+  )}
+})
+
+observe({
+  
+  if(isTruthy(input$mapsmall)| isTruthy(input$mapppafilter)){
+    updateCheckboxInput(session,
+                        "nofiltermapppa",
+                        value=FALSE)
+  }else{
+    updateCheckboxInput(session,
+                        "nofiltermapppa",
+                        value=TRUE)
+  }
+  
+})
+
+observe({
+  if (!isTruthy(input$genelistpheno) && !isTruthy(input$genelistdrug)) {
+    updateCheckboxInput(session, "genelistnofilter", value = TRUE)
+  } else {
+    updateCheckboxInput(session, "genelistnofilter", value = FALSE)
+  }
+})
+
+observeEvent(input$genelistpheno, {
+  if (isTruthy(input$genelistpheno)) {
+    updateCheckboxInput(session, "genelistnofilter", value = FALSE)
+  }
+})
+
+observeEvent(input$genelistdrug, {
+  if ( isTruthy(input$genelistdrug)) {
+    updateCheckboxInput(session, "genelistnofilter", value = FALSE)
+  } 
+})
+
+observe({
+  if (input$genelistnofilter) {
+    updateCheckboxGroupInput(session,
+                             "genelistpheno",
+                             choiceNames = c("Gene has known kidney phenotypes in mouse models (Mouse Genome Informatics, MGI)","Gene is described to cause a human disease with kidney phenotype (online mendelian inheritance in man, OMIM, Groopman et al. [N.Engl.J.Med,2019], or Wopperer et al. [Kidney Int.,2022])"),
+                             choiceValues = c("mouse","human"), 
+                             selected = NULL)
+    updateCheckboxGroupInput(session,
+                             "genelistdrug",
+                             choiceNames = c("Gene is a known drug target for kidney diseases (Therapeutic Drug Database)","Gene is a known drug target for any other diseases or with unspecific indication (Therapeutic Drug Database)"),
+                             choiceValues = c("kidney", "other"),
+                             selected = NULL)
+  }
+})
+
+
+   ##### check if all required options are selected:
+
+  go <- reactiveValues("gps_correct" = FALSE
+    
+  )
+  
+  observeEvent(input$gpsgo,{
+    if((!input$signalppafilter&!input$signalsmall&!input$signalnofilter)|(!isTruthy(input$genemapprot)&!isTruthy(input$genemapeqtl)&!input$mapnofilter)|(!isTruthy(input$genelistpheno)&!isTruthy(input$genelistdrug)&!input$genelistnofilter)){
+      go$gps_correct = FALSE
+    }else{
+      go$gps_correct = TRUE
+    }
+  })
+
+  observeEvent(input$gpsgo,{
+    if(!go$gps_correct){
+    showModal(modalDialog(
+      titel="Missing GPS filter-options",
+      tags$h4("Error: There are options missing for gene-prioritisation!", style="color: red;"),
+      p("Please check your selections. Did you select 'no filter' in section 1, 2 and 3 if you do not want to restrict your search results to any of the available options?"),
+      easyClose = TRUE,
+      footer=NULL,
+      size = "m"
+    ))
+      }
+  })
+  
+  
+ 
+  gps_gps_rows <- reactiveValues("signalfilter" = c(1:nrow(GPS)), "mapfilter"=c(1:nrow(GPS)), "genelistfilter"=c(1:nrow(GPS)))
+  
+  observeEvent(input$gpsgo,{
+    if(go$gps_correct){
+      
+      if(isTruthy(input$signalppafilter) & isTruthy(input$signalsmall)){
+        gps_gps_rows$signalfilter=which(GPS$max_PPA>=input$signalhigh | GPS$credible_variants_per_locus_signal<=5)
+      }else{
+        if(isTruthy(input$signalppafilter) & !isTruthy(input$signalsmall)){
+          gps_gps_rows$signalfilter=which(GPS$max_PPA>=input$signalhigh)
+        }else if(!isTruthy(input$signalppafilter) & isTruthy(input$signalsmall)){
+          gps_gps_rows$signalfilter=which(GPS$credible_variants_per_locus_signal<=5)
+        }else if(!isTruthy(input$signalppafilter) & !isTruthy(input$signalsmall)){
+          gps_gps_rows$signalfilter=c(1:nrow(GPS))
+        }
+      }
+      
+      ## restrict bun/cys signals:
+      if(input$signalcysbun==TRUE){
+        gps_gps_rows$signalfilter=intersect(gps_gps_rows$signalfilter,which(GPS$Cys.BUN%in%c("bun","cys","cys/bun")))
+      }
+      ## restrict DM signals:
+      if(input$signalDM==TRUE){
+        gps_gps_rows$signalfilter=intersect(gps_gps_rows$signalfilter,which(GPS$DM_effect!="-"))
+      }
+      ## restrict decline signals:
+      if(input$signaldecline==TRUE){
+        gps_gps_rows$signalfilter=intersect(gps_gps_rows$signalfilter,which(GPS$decline_effect!="-"))
+      }
+    }
+  })
+  
+  
+  map <- eventReactive(input$gpsgo,{
+    if(go$gps_correct){
+      if(isTruthy(input$genemapprot)& isTruthy(input$genemapeqtl)){
+        c(input$genemapprot,input$genemapeqtl)
+      }else if(isTruthy(input$genemapprot)& !isTruthy(input$genemapeqtl)){
+        c(input$genemapprot)
+      }else if(!isTruthy(input$genemapprot)& isTruthy(input$genemapeqtl)){
+        c(input$genemapeqtl)
+      }else if(isTruthy(input$mapnofilter)){
+         NULL
+      }
+      
+    }
+  })
+  
+  
+  
+  gps_version_all_show <- eventReactive(input$gpsgo,{
+    GPS_show[gps_gps_rows$signalfilter,]
+  })
+  
+  gps_version_10_show <- eventReactive(input$gpsgo,{
+    GPS_10_show[gps_gps_rows$signalfilter,]
+  })
+  
+  gps_version_50_show <- eventReactive(input$gpsgo,{
+    GPS_50_show[gps_gps_rows$signalfilter,]
+  })
+  
+  
+  
+  
+  ppa_filter_gps <- eventReactive(input$gpsgo,{
+    if(go$gps_correct){
+      if(!is.null(map())){
+        if(isTruthy(input$nofiltermapppa)){
+          "no_filter"
+        }else{
+          if(isTruthy(input$mapppafilter)&isTruthy(input$mapsmall)){
+            paste("small_", input$maphigh, sep="")
+          }else{
+            if(isTruthy(input$mapppafilter)&!isTruthy(input$mapsmall)){
+              input$maphigh
+              
+            }else if(!isTruthy(input$mapppafilter)&isTruthy(input$mapsmall)){
+              "small"
+            }
+          }
+        }
+      }
+    }
+  })
+  
+  #map each gps version (PPA) 
+  
+  gps_version_all_show_map <- eventReactive(input$gpsgo,{
+    if(go$gps_correct){
+      if(!is.null(map())){
+        if(any(ppa_filter_gps()%in%c(0.5, 0.1))){
+          NULL
+        }else{
+          if(any(ppa_filter_gps()%in%c("small", "small_0.99", "small_0.5","small_0.1"))){
+            if(length(map())==1){
+              gps_version_all_show()[which(gps_version_all_show()[,as.numeric(map())]!=0 & gps_version_all_show()[,10] <=5),]
+            }else{
+            gps_version_all_show()[which(rowSums(gps_version_all_show()[,as.numeric(map())])!=0 & gps_version_all_show()[,10] <=5),]
+            }
+          }else if(ppa_filter_gps()=="no_filter"){
+            if(length(map())==1){
+              gps_version_all_show()[which(gps_version_all_show()[,as.numeric(map())]!=0 ),]
+            }else{
+              gps_version_all_show()[which(rowSums(gps_version_all_show()[,as.numeric(map())])!=0 ),]
+            }
+            
+          }else if(ppa_filter_gps()==0.99){
+            if(length(map())==1){
+              gps_version_all_show()[which(gps_version_all_show()[,as.numeric(map())]!=0 & gps_version_all_show()[,10] ==1),]
+            }else{
+              gps_version_all_show()[which(rowSums(gps_version_all_show()[,as.numeric(map())])!=0 & gps_version_all_show()[,10] ==1),]
+            }
+            
+          }
+        }
+      }else{
+        gps_version_all_show()
+      }
+    }
+  })
+  
+  
+  
+  
+  
+
+  gps_version_10_show_map <- eventReactive(input$gpsgo,{
+    if(go$gps_correct) {
+      if(!is.null(map())){
+        if(ppa_filter_gps()%in%c("no_filter", "small_0.5", "small","small_0.99", 0.99,0.5)){
+          NULL
+        }else{ #small_0.1 or 0.1
+          if(length(map())==1){
+            gps_version_10_show()[which(gps_version_10_show()[,as.numeric(map())]!=0),]
+          }else{
+            gps_version_10_show()[which(rowSums(gps_version_10_show()[,as.numeric(map())])!=0),]
+          }
+        }
+      }else{
+        NULL
+      }
+    }
+  })
+  
+  gps_version_50_show_map <- eventReactive(input$gpsgo,{
+    if(go$gps_correct){
+      if(!is.null(map())){
+        if(ppa_filter_gps()%in%c("no_filter", "small_0.1", "small","small_0.99", 0.99, 0.1)){
+         NULL
+        }else{
+          #small_0.5 or 0.5
+          if(length(map())==1){
+            gps_version_50_show()[which(gps_version_50_show()[,as.numeric(map())]!=0),]
+          }else{
+            gps_version_50_show()[which(rowSums(gps_version_50_show()[,as.numeric(map())])!=0),]
+          }      
+        }
+      }else{
+        NULL
+      }
+    }
+  })
+  
+  # combine gps_versions
+  
+  gps_version_mapped_show <- eventReactive(input$gpsgo,{
+    if(go$gps_correct){
+      if(is.null(gps_version_10_show_map())&is.null(gps_version_50_show_map())){ #no high ppa (10,50), all or small/single
+        gps_version_all_show_map()
+      }else if(is.null(gps_version_10_show_map())&is.null(gps_version_all_show_map())){ # only ppa 50
+        gps_version_50_show_map()
+      }else if(is.null(gps_version_all_show_map())&is.null(gps_version_50_show_map())){ #only high 10
+        gps_version_10_show_map()
+      }else if(!is.null(gps_version_all_show_map()) & !is.null(gps_version_50_show_map())){ #small + ppa 50
+        GPS_tbl = rbind(gps_version_all_show_map(), gps_version_50_show_map() ) # first entry always from small
+        if(any(duplicated(GPS_tbl[,c("Gene*","Signal ID")]))){
+          GPS_tbl[which(!duplicated(GPS_tbl[,c("Gene*","Signal ID")])),] #remove potential second entries from high ppa
+        }
+      }else if(!is.null(gps_version_all_show_map()) & !is.null(gps_version_10_show_map())){ #small + ppa 10
+        GPS_tbl = rbind(gps_version_all_show_map(), gps_version_10_show_map() ) # first entry always from small
+        if(any(duplicated(GPS_tbl[,c("Gene*","Signal ID")]))){
+          GPS_tbl[which(!duplicated(GPS_tbl[,c("Gene*","Signal ID")])),] #remove potential second entries from high ppa
+        }
+      }
+    }
+    
+  })
+  
+
+  # output$GPS_datadescription <- renderText({ #option to test if filter options work properly
+  #   nrow(rbind(gps_version_all_show_map(), gps_version_50_show_map()))
+  # })
+  
+  ## pheno and drug filtering
+  
+  gps_version_mapped_pheno_show <- eventReactive(input$gpsgo,{
+    if(go$gps_correct){
+      if(!isTruthy(input$genelistpheno) & !isTruthy(input$genelistdrug)){
+        gps_version_mapped_show()
+      }else{
+        pheno = NULL
+        if(isTruthy(input$genelistpheno)){
+          if(length(input$genelistpheno)==2){
+            pheno = c(20,21)
+          }else{
+            pheno = ifelse(input$genelistpheno=="mouse",20,21)
+          }
+        }
+        drug=NULL
+        if(isTruthy(input$genelistdrug)){
+          if(length(input$genelistdrug)==2){
+            drug = c("yes for kidney disease", "yes for other disease")
+          }else{
+            drug = ifelse(input$genelistdrug=="kidney", "yes for kidney disease", "yes for other disease")
+          }
+          
+        }
+        if(is.null(pheno)){
+          gps_version_mapped_show()[which(gps_version_mapped_show()[,"known_drug_target"] %in% drug),]
+        }else if(is.null(drug)){
+          if(length(pheno)==1){
+            gps_version_mapped_show()[which(gps_version_mapped_show()[,pheno]!=0),]
+          }else{
+            gps_version_mapped_show()[which(rowSums(gps_version_mapped_show()[,pheno])!=0),]
+          }
+          
+        }else if(!is.null(pheno) & ! is.null(drug)){
+          if(length(pheno)==1){
+            gps_version_mapped_show()[which(gps_version_mapped_show()[,pheno]!=0 | gps_version_mapped_show()[,"known_drug_target"] %in% drug),]
+          }else{
+            gps_version_mapped_show()[which(rowSums(gps_version_mapped_show()[,pheno])!=0 | gps_version_mapped_show()[,"known_drug_target"] %in% drug),]
+          }
+          
+        }
+      }
+    }
+  })
+  
+
+  
+  go_correct <- reactiveVal(FALSE)
+  
+  observeEvent(input$gpsgo, {
+    if(go$gps_correct){
+      go_correct(TRUE)
+    }
+    
+  })
+  
+  
+  
+  gps_show_final <- reactive({
+    if (go_correct()) {
+      gps_version_mapped_pheno_show()
+    } else {
+      GPS_show
+    }
+  })
+  
+  
+  output$downloadGPSTable <- downloadHandler(
+    filename = function() {
+      paste("results_KidneyGPS_", Sys.Date(), ".xlsx", sep = "")
+    },
+    content = function(file) {
+      data_to_export <- gps_show_final()[,GPS_columns]
+      data_to_export[,"Gene*"] <- gsub('<a href=".*">|</a>', '', data_to_export[,"Gene*"])
+      write_xlsx(data_to_export, file)
+    }
+  )
+ 
+  
+  ### GPS_show column names
+  # [1] "Locus name**"
+  # [2] "Locus ID"
+  # [3] "Signal ID"
+  # [4] "Gene*"
+  # [5] "Distance to locus lead variant"
+  # [6] "Chromosome"
+  # [7] "Position gene start"
+  # [8] "Position gene end"
+  # [9] "eGFRcys or BUN validation"
+  # [10] "# credible variants in signal"
+  # [11] "stop-gained, stop-lost, non-synonymus"
+  # [12] "canonical splice, noncoding change, synonymous, splice site"
+  # [13] "other deleterious variant"
+  # [14] "eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])"
+  # [15] "eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])"
+  # [16] "eQTL kidney cortex (GTEx)"
+  # [17] "eQTL other tissue (GTEx)"
+  # [18] "sQTL kidney cortex (GTEx)"
+  # [19] "sQTL other tissue (GTEx)"
+  # [20] "# kidney phenotypes in mouse"
+  # [21] "# kidney phenotypes in human"
+  # [22] "Coloc in NEPTUNE tissue"
+  # [23] "DM_effect"
+  # [24] "decline_effect"
+  # [25] "known_drug_target"
+  # [26] "Score"
+  # [27] "max PPA"
+  GPS_columns <- match(c('Gene*','Locus name**','Locus ID','Signal ID','eGFRcys or BUN validation','DM_effect','decline_effect','# credible variants in signal','stop-gained, stop-lost, non-synonymus','canonical splice, noncoding change, synonymous, splice site','other deleterious variant','eQTL glomerulus (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL tubulo-interstitium (NEPTUNE, or Sheng et al [Nat Genet, 2021])','eQTL kidney cortex (GTEx)','eQTL other tissue (GTEx)','sQTL kidney cortex (GTEx)','sQTL other tissue (GTEx)','Coloc in NEPTUNE tissue','# kidney phenotypes in mouse','# kidney phenotypes in human','known_drug_target','Distance to locus lead variant','Chromosome','Position gene start','Position gene end'),names(GPS_show))
+  
+ 
+ 
+     output$GPS <- renderDataTable({
+      datatable(gps_show_final()[,GPS_columns],
+                rownames = FALSE,
+                options = list(
+                  columnDefs = list(list(className = 'dt-left', targets = "_all")),
+                  initComplete=JS(initComplete),
+                  headerCallback = JS(headerCallback),
+                  dom = 'rltip'
+                  ),
+                
+                class ='display',
+                filter = list(
+                  position = 'top', clear = TRUE, plain = TRUE
+                ),
+                escape = FALSE,
+
+                caption = htmltools::tags$caption(
+                  style = 'caption-side: bottom; text-align: left; font-weight: normal;',
+                  '* Link to GeneCards, **nearest gene to locus lead-variant'),
+                container = sketch
+                )
+     })
+
+  
+  output$GPS_Genes1 <- renderText({
+    ngene_unique <- length(unique(gps_show_final()[,'Gene*']))
+    nsignal <- length(unique(paste(gps_show_final()[,'Locus ID'], gps_show_final()[,'Signal ID'],sep = ".")))
+    paste(ngene_unique, "genes from",nsignal, "signals meet the applied filter criteria.")
+  })
+ 
+
+  
+  
+  
+  observeEvent(input$question_GPS,{
+    showModal(modalDialog(
+      titel="Help GPS filter-options",
+      tags$h4("GPS filter-options - Help:"),
+      p("This tab allows to generate customized gene lists. Select filter options from all three sections and click 'Go prioritze' to generate your gene list. When all 5906 genes in all 594 signals should be shown, the 'no filter' options have to be selected."),
+      easyClose = TRUE,
+      footer=NULL,
+      size = "m"
+    ))
+  })
+                             
 
 # region page -------------------------------------------------------------
   
@@ -908,7 +1480,7 @@ server <- function(input, output, session) {
         th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
         th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
         th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the locus lead variant is nominal significant (P<0.05) associated with concordent effect direction with ", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or ",tags$abbr(title="blood urea nitrogen","BUN")))),
-        th(rowspan = 2, class="DMwithcomment hover",'Signal interaction with DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
+        th(rowspan = 2, class="DMwithcomment hover",'Signal association depends on DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows different effect on eGFR in individuals with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
         th(rowspan = 2, class="declinewithcomment hover",'Signal association with eGFRcrea decline', span(class="declinecomment",list( "Information whether the signal index variant (or a correlated variant) was established with annual eGFR-decline, Gorski et al. 2022"))),
         th(rowspan = 2, '# credible variants in signal'),
         th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
@@ -1016,7 +1588,7 @@ server <- function(input, output, session) {
   ov_loci<- reactive({
     if(valid_reg()){
       
-      region_table_show[which(chr()==as.numeric(region_table$chr) & ((region_start()<=region_table$region_start_500kb & region_end()>=region_table$region_start_500kb) | (region_start()>=region_table$region_start_500kb & region_start()<=region_table$region_end_500kb))),]
+      region_table_show[which(chr()==as.numeric(region_table$chr) & ((region_start()<=region_table$region_start_250kb & region_end()>=region_table$region_start_250kb) | (region_start()>=region_table$region_start_250kb & region_start()<=region_table$region_end_250kb))),]
     }else{0}
   })
   
@@ -1027,7 +1599,7 @@ server <- function(input, output, session) {
       datatable(ov_loci(),rownames=FALSE,
                 options = list(
                   columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                  , scrollX=TRUE,
+                  , scrollX=TRUE, scrollCollapse = TRUE,
                   dom = 'lfrtBip',
                   buttons= list(c('copy', 'excel','csv'))
                 ),
@@ -1075,7 +1647,7 @@ server <- function(input, output, session) {
                   
                   options = list(
                     columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                    , scrollX=TRUE
+                    , scrollX=TRUE, scrollCollapse = TRUE
                     ,headerCallback = JS(headerCallback2),
                     dom = 'lfrtBip',
                     buttons= list(c('copy', 'excel','csv'))
@@ -1173,11 +1745,11 @@ server <- function(input, output, session) {
     if(any(input$`variant-search-options`=="credvar")){
     output$detail.evidence.snp <- renderUI(
     div(class="snpinputbox",checkboxGroupInput(inputId="detail_evidence_variant", label=span(class="snpsearch","Specification of additional functional SNP information",span(class="snpsearchcomment","functional information only available for credible variants")),  selected = c("CADD","NEPTUNE_glo","NEPTUNE_tub","GTEx_eQTL","GTEx_sQTL"),
-                                               inline = FALSE, width = NULL, choiceNames = c("deleteriousness and functional annotation (CADD)","eQTL in glomerulus (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitium (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex (GTEx)","sQTL in kidney cortex (GTEx)","eQTL in other tissues (GTEx)","sQTL in other tissues (GTEx)"), choiceValues = c("CADD","NEPTUNE_glo","NEPTUNE_tub","GTEx_eQTL","GTEx_sQTL","GTEx_wo_kidney_eQTL","GTEx_wo_kidney_sQTL")),
+                                               inline = FALSE, width = NULL, choiceNames = c("deleteriousness and functional annotation (CADD)","eQTL in glomerulus (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitium (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex (GTEx)","sQTL in kidney cortex (GTEx)","eQTL in other tissues (GTEx)","sQTL in other tissues (GTEx)", "eGFR association statistics separated by diabetes status"), choiceValues = c("CADD","NEPTUNE_glo","NEPTUNE_tub","GTEx_eQTL","GTEx_sQTL","GTEx_wo_kidney_eQTL","GTEx_wo_kidney_sQTL","dm_stat")),
     ))}else{
       output$detail.evidence.snp <- renderUI(
         div(class="snpinputbox",disabled(checkboxGroupInput(inputId="detail_evidence_variant", label=span(class="snpsearch","Specification of additional functional SNP information or locus based information",span(class="snpsearchcomment","functional information only available for credible variants")),
-                                                   inline = FALSE, width = NULL, choiceNames = c("deleteriousness and functional annotation (CADD)","eQTL in glomerulus (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitium (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex (GTEx)","sQTL in kidney cortex (GTEx)","eQTL in other tissues (GTEx)","sQTL in other tissues (GTEx)"), choiceValues = c("CADD","NEPTUNE_glo","NEPTUNE_tub","GTEx_eQTL","GTEx_sQTL","GTEx_wo_kidney_eQTL","GTEx_wo_kidney_sQTL"))),
+                                                   inline = FALSE, width = NULL, choiceNames = c("deleteriousness and functional annotation (CADD)","eQTL in glomerulus (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in tubulo-interstitium (NEPTUNE, or Sheng et al [Nat.Genet. 2021])","eQTL in kidney cortex (GTEx)","sQTL in kidney cortex (GTEx)","eQTL in other tissues (GTEx)","sQTL in other tissues (GTEx)","eGFR association statistics separated by diabetes status"), choiceValues = c("CADD","NEPTUNE_glo","NEPTUNE_tub","GTEx_eQTL","GTEx_sQTL","GTEx_wo_kidney_eQTL","GTEx_wo_kidney_sQTL","dm_stat"))),
         ))
     }
   })
@@ -1191,7 +1763,7 @@ server <- function(input, output, session) {
     
     req(input$SNP_batch)
     
-    ivbl=unlist(strsplit(input$SNP_batch,"[^[:alnum:]^-]",perl=TRUE)) ## excludes all non-word characteres except "-" that might be used as separators
+    ivbl=unlist(strsplit(input$SNP_batch,"[^[:alnum:]^:]",perl=TRUE)) ## excludes all non-word characteres except ":" that might be used as separators
     if(any(ivbl=="")){
       ivbl[-which(ivbl=="")]
     }else{ivbl}
@@ -1247,9 +1819,19 @@ server <- function(input, output, session) {
   #snp page	
   cred_vars <- eventReactive(go$snp, {
     if(!is.null(snp())){
-      if(any(snp()%in%cred_var$rsid)){
-        snp_in_cred=(snp()%in%cred_var$rsid)
-        snp()[which(snp_in_cred)]
+		snp1 = snp()
+		if(any(grepl(":", snp1))){
+			for(i in grep(":", snp1)){
+				chr=unlist(strsplit(snp1[i],":"))[1]
+				pos=unlist(strsplit(snp1[i],":"))[2]
+				if(any(cred_var$chr==chr & cred_var$pos==pos)){
+					snp1[i] = cred_var$rsid[which(cred_var$chr==chr & cred_var$pos==pos)]
+				}
+			}
+		}
+      if(any(snp1%in%cred_var$rsid)){
+        snp_in_cred=(snp1%in%cred_var$rsid)
+        snp1[which(snp_in_cred)]
       }else{NULL}
       }else{NULL}
     })
@@ -1283,6 +1865,7 @@ server <- function(input, output, session) {
   observeEvent(go$snp,{shinyjs::toggleElement(id="div_GTEx_sqtl_snp", condition= (any(detail_evidence_variant()=="GTEx_sQTL")&valid()))})
   observeEvent(go$snp,{shinyjs::toggleElement(id="div_GTEx_eqtl_wo_kidney_snp", condition= (any(detail_evidence_variant()=="GTEx_wo_kidney_eQTL")&valid()))})
   observeEvent(go$snp,{shinyjs::toggleElement(id="div_GTEx_sqtl_wo_kidney_snp", condition= (any(detail_evidence_variant()=="GTEx_wo_kidney_sQTL")&valid()))})
+  observeEvent(go$snp,{shinyjs::toggleElement(id="div_dm_stat_snp", condition= (any(detail_evidence_variant()=="dm_stat")&valid()))})
   observeEvent(go$snp,{shinyjs::toggleElement(id="div_locus_zoom_snp", condition= (any(input$snp.locuszoom=="locus_zoom")&valid()))})
   
   
@@ -1317,7 +1900,7 @@ server <- function(input, output, session) {
       datatable(all_sig_show[which(all_sig$RSID%in%gws_snps()),c(15,11,12,2:8,22,23,24)], rownames=FALSE,
                 options = list(
                   columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                  , scrollX=TRUE,
+                  , scrollX=TRUE, scrollCollapse = TRUE,
                   dom = 'lfrtBip',
                   buttons= list(c('copy', 'excel','csv'))
                 ),
@@ -1341,19 +1924,19 @@ server <- function(input, output, session) {
     if(!is.null(snp())){
       if(inputtype$snp_final=="single"){
         if(valid()){
-          paste(snp(), "is a 99% credible variant in at least one of the 634 eGFRcrea signals. Shown are results from GWAS meta-analyses in European ancestry:", sep=" ")
+          paste(snp(), "is a 99% credible variant in at least one of the 594 eGFRcrea signals. Shown are results from GWAS meta-analyses in European ancestry:", sep=" ")
         }else{
-          paste(snp(), "is not a 99% credible variant in any of the 634 eGFRcrea signals.", sep=" ")
+          paste(snp(), "is not a 99% credible variant in any of the 594 eGFRcrea signals.", sep=" ")
         }
       }else{
         if(gws()){
           if(length(cred_vars())>1){
-            paste("Of your ",length(snp()), " queried SNPs, ", length(cred_vars()), " SNPs are 99% credible variants in at least one of the 634 eGFRcrea signals. Shown are results from GWAS meta-analyses in European ancestry:", sep="")
+            paste("Of your ",length(snp()), " queried SNPs, ", length(cred_vars()), " SNPs are 99% credible variants in at least one of the 594 eGFRcrea signals. Shown are results from GWAS meta-analyses in European ancestry:", sep="")
           }else{
-            paste("Of your ",length(snp()), " queried SNPs, ", length(cred_vars()), " SNP (", cred_vars(),") is a 99% credible variant in at least one of the 634 eGFRcrea signals. Shown are results from GWAS meta-analyses in European ancestry:", sep="") 
+            paste("Of your ",length(snp()), " queried SNPs, ", length(cred_vars()), " SNP (", cred_vars(),") is a 99% credible variant in at least one of the 594 eGFRcrea signals. Shown are results from GWAS meta-analyses in European ancestry:", sep="") 
           }
         }else{
-          paste("None of your ",length(snp()), " queried SNPs is a 99% credible variant in any of the 634 eGFRcrea signals.", sep="") 
+          paste("None of your ",length(snp()), " queried SNPs is a 99% credible variant in any of the 594 eGFRcrea signals.", sep="") 
         }
       }
       
@@ -1365,7 +1948,7 @@ server <- function(input, output, session) {
       datatable(cred_var_show[which(cred_var$rsid%in%cred_vars()),], rownames=FALSE,
                 options = list(
                   columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                  , scrollX=TRUE,
+                  , scrollX=TRUE, scrollCollapse = TRUE,
                   dom = 'lfrtBip',
                   buttons= list(c('copy', 'excel','csv'))
                 ),
@@ -1426,7 +2009,7 @@ server <- function(input, output, session) {
           datatable(x, rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1472,7 +2055,7 @@ server <- function(input, output, session) {
           datatable(glo_show[which(glo_show$RSID%in%cred_vars()),], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1517,7 +2100,7 @@ server <- function(input, output, session) {
           datatable(tub_show[which(tub_show$RSID%in%cred_vars()),], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1562,7 +2145,7 @@ server <- function(input, output, session) {
           datatable(GTEx_eQTL_show[which(GTEx_eQTL$rs_id_dbSNP151_GRCh38p7%in%cred_vars()),], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1606,7 +2189,7 @@ server <- function(input, output, session) {
           datatable(GTEx_sQTL_show[which(GTEx_sQTL$rs_id_dbSNP151_GRCh38p7%in%cred_vars()),], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1650,7 +2233,7 @@ server <- function(input, output, session) {
           datatable(gtex_without_kidney_show[which(gtex_without_kidney$rs_id_dbSNP151_GRCh38p7%in%cred_vars()),c(1:13)], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1694,7 +2277,7 @@ server <- function(input, output, session) {
           datatable(sqtl_without_kidney_show[which(sqtl_without_kidney$rs_id_dbSNP151_GRCh38p7%in%cred_vars()),c(1:12)], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -1710,11 +2293,35 @@ server <- function(input, output, session) {
     }
   })
   
+  output$dm_stat_snp <- DT::renderDT(server=FALSE, {
+    if(valid()){
+      if(any(detail_evidence_variant()=="dm_stat")){
+        if(any(DM_stats$rsid%in%cred_vars())){
+          datatable(DM_stats_show[which(DM_stats$rsid%in%cred_vars()),], rownames=FALSE,
+                    options = list(
+                      columnDefs = list(list(className = 'dt-left', targets = "_all"))
+                      , scrollX=TRUE, scrollCollapse = TRUE,
+                      dom = 'lfrtBip',
+                      buttons= list(c('copy', 'excel','csv'))
+                    ),
+                    extensions = 'Buttons',
+                    caption = htmltools::tags$caption(
+                      style = 'caption-side: bottom; text-align: left; font-weight: normal;',
+                      htmltools::tags$p('N: Sample size of European-ancestry GWAS meta-analysis for this SNP, Effect allele: eGFRcrea lowering allele in the combined analysis, EAF: Effect allele frequency')
+                    ),
+                    class='display',
+                    container = sketchdmstatgene
+          )
+        }
+      }
+    }
+  })
+  
   observeEvent(input$question_SNP,{
     showModal(modalDialog(
       titel="Help SNP search",
       tags$h4("Variant search - Help:"),
-      p("Enter a RSid of a SNP you are interested in. Other formats than RSids are not supported, yet. If you search without any additional options the association statistics for unconditioned eGFRcrea (if the SNP has an association p-value <5E-8) are displayed. If the SNP is a 99% credible variant for any eGFRcrea signal also conditioned results (if there are other independent signals in the respective locus) and the posterior propabitliy of association (PPA) is shown in a second table. For further information check the Documentation & Help page."),
+      p("Enter a RSid or genomic position in format of chromosome:position (GRCh37) of a SNP you are interested in. If you search without any additional options the association statistics for unconditioned eGFRcrea (if the SNP has an association p-value <5E-8) are displayed. If the SNP is a 99% credible variant for any eGFRcrea signal also conditioned results (if there are other independent signals in the respective locus) and the posterior propabitliy of association (PPA) is shown in a second table. For further information check the Documentation & Help page."),
       easyClose = TRUE,
       footer=NULL,
       size = "m"
@@ -1870,20 +2477,46 @@ server <- function(input, output, session) {
   
   
   # skript for gene page
-  
-  correct_genenames <- eventReactive(go$gene,{
+  corrected_genenames <- eventReactive(go$gene,{ # indices vector if input genenames are not HGNC names 
     if(!is.null(gene())){
-      if(any(gene()%in%toupper(genes_sorted$Gene))){
-        gene()[which(gene()%in%toupper(genes_sorted$Gene))]
+      if(any(gene()%in%toupper(real_genes$genes) & !gene()%in%toupper(real_genes$Approved.symbol) )){
+        which(gene()%in%toupper(real_genes$genes) & !gene()%in%toupper(real_genes$Approved.symbol)) # should provide indices, when gene is not HGNC gene
       }else{NULL}
     }else{NULL}
   })
   
   
-  genes_in_gps <- eventReactive(go$gene,{
+  correct_genenames <- eventReactive(go$gene,{
     if(!is.null(gene())){
-      if(any(gene()%in%toupper(GPS$Gene))){
-        gene()[which(gene()%in%toupper(GPS$Gene))]
+		gene1 = gene()
+		if(!is.null(corrected_genenames())){
+			
+			for (i in corrected_genenames()){
+				gene1[i]=toupper(real_genes$Approved.symbol[which(real_genes$genes==gene1[i])])
+			}
+		}
+        if(any(gene1%in%toupper(genes_sorted$Gene))){
+			gene1[which(gene1%in%toupper(genes_sorted$Gene))]
+        }else{NULL}
+    }else{NULL}
+  })
+  
+  output$testforme <-  renderText({
+	if(!is.null(gene())){
+		if(!is.null(corrected_genenames())){
+			if(length(corrected_genenames())==1){
+				paste("Of your ",length(gene()), " gene names(s), ", length(corrected_genenames()), " was a synonym and was matched to its  official HGNC gene name [",correct_genenames(),"].")
+			}else{
+				paste("Of your ",length(gene()), " gene names(s), ", length(corrected_genenames()), " were a synonyms and were matched to their  official HGNC gene names.")
+			}
+		}
+	}
+  })
+  
+  genes_in_gps <- eventReactive(go$gene,{
+    if(!is.null(correct_genenames())){
+      if(any(correct_genenames()%in%toupper(GPS$Gene))){
+        correct_genenames()[which(correct_genenames()%in%toupper(GPS$Gene))]
       }else{NULL}
     }else{NULL}
   })
@@ -1904,51 +2537,55 @@ server <- function(input, output, session) {
   output$namecheck_gene <- renderText({
     if(inputtype$gene_final=="single"){
       if(is.null(correct_genenames())){
-        paste(gene()," is no valid/official gene name from HGNC, please check your input.",sep="")
+        paste(gene()," is no valid/official gene name, please check your input.",sep="")
       }else{
         if(is.null(genes_in_gps())){
-          paste(gene()," is not included in any eGFRcrea locus.", sep="")
+          paste(correct_genenames()," is not included in any eGFRcrea locus.", sep="")
         }else{
-          paste("Following information has been found for ", genes_in_gps(),":",sep="")
+			if(!is.null(corrected_genenames())){
+				paste("Following information has been found for ", genes_in_gps(),"[",gene(),"]",":",sep="")
+			}else{
+				paste("Following information has been found for ", genes_in_gps(),":",sep="")
+			}
         }
       }
     }else{
       if(is.null(correct_genenames)){
         if(incorrect_genenames()==1){
-          paste("You queried ",length(gene())," gene name. ",gene(),"  is no official/valid gene name from HGNC. No further searches were performed. Please check your input.",sep="")
+          paste("You queried ",length(gene())," gene name. ",gene(),"  is no official/valid gene name. No further searches were performed. Please check your input.",sep="")
         }else{
-          paste("You queried ",length(gene())," gene names. All of these are no official/valid gene names from HGNC. No further searches were performed. Please check your input.",sep="")
+          paste("You queried ",length(gene())," gene names. All of these are no official/valid gene names. No further searches were performed. Please check your input.",sep="")
         }
       }else{
         if(is.null(genes_in_gps())){
           if(incorrect_genenames()==1){
-            paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these is no official/valid gene name from HGNC. However, none of your ", length(correct_genenames()), " queried official genes is not included in any of the 424 eGFRcrea loci. Thus, no GPS entries are available.",sep="")
+            paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these is no official/valid gene name. Additionally, none of your ", length(correct_genenames()), " queried official genes is not included in any of the 424 eGFRcrea loci. Thus, no GPS entries are available.",sep="")
           }else{
             if(incorrect_genenames()==0){
-              paste("You queried ",length(gene())," genes. All of these are official/valid gene names from HGNC. However, none of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci. Thus, no GPS entries are available.",sep="")
+              paste("You queried ",length(gene())," genes. All of these are official/valid gene names. However, none of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci. Thus, no GPS entries are available.",sep="")
             }else{
-              paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these are no official/valid gene names from HGNC. However, none of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci. Thus, no GPS entries are available.",sep="")
+              paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these are no official/valid gene names. Additionally, none of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci. Thus, no GPS entries are available.",sep="")
             }
           }
         }else{
           if(length(correct_genenames())==1){
             if(incorrect_genenames()==1){
-              paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these is no official/valid gene names from HGNC. ",length(genes_in_gps()), " (",genes_in_gps(),")"," of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="")
+              paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these is no official/valid gene names. ",length(genes_in_gps()), " (",genes_in_gps(),")"," of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="")
             }else{
               if(incorrect_genenames()==0){
                 paste("You queried ",length(gene())," genes. All of these are official/valid gene names from HGNC. ",length(genes_in_gps())," (",genes_in_gps(),")"," of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="")
               }else{
-                paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these are no official/valid gene names from HGNC. ",length(genes_in_gps())," (",genes_in_gps(),")"," of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="")
+                paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these are no official/valid gene names. ",length(genes_in_gps())," (",genes_in_gps(),")"," of your ", length(correct_genenames()), " queried official genes is included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="")
               }
             }
           }else{
             if(incorrect_genenames()==1){
-              paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these is no official/valid gene names from HGNC. ",length(genes_in_gps())," of your ", length(correct_genenames()), " queried official genes are included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="") 
+              paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these is no official/valid gene names. ",length(genes_in_gps())," of your ", length(correct_genenames()), " queried official genes are included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="") 
             }else{
               if(incorrect_genenames()==0){
                 paste("You queried ",length(gene())," genes. All of these are official/valid gene names from HGNC. ",length(genes_in_gps())," of your ", length(correct_genenames()), " queried official genes are included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="") 
               }else{
-                paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these are no official/valid gene names from HGNC. ",length(genes_in_gps())," of your ", length(correct_genenames()), " queried official genes are included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="") 
+                paste("You queried ",length(gene())," genes. ",incorrect_genenames()," of these are no official/valid gene names. ",length(genes_in_gps())," of your ", length(correct_genenames()), " queried official genes are included in any of the 424 eGFRcrea loci and thus included in the GPS.",sep="") 
               }
             }
           }
@@ -1968,7 +2605,7 @@ server <- function(input, output, session) {
           datatable(x, rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2035,7 +2672,7 @@ server <- function(input, output, session) {
           datatable(glo_show[which(toupper(glo_show$`Affected gene`)%in%genes_in_gps() & glo_show$PPA>=ppa()),], rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2056,7 +2693,7 @@ server <- function(input, output, session) {
     if(valid_gene()){
       if(any(columns()==14)){
         if(any(toupper(glo$Approved.symbol)%in%genes_in_gps())){
-          glo[which(toupper(glo$Approved.symbol)%in%genes_in_gps() & glo$PPA>=ppa()),]
+          glo[which(toupper(glo$Approved.symbol)%in%genes_in_gps() & glo$ppa>=ppa()),]
         }else{0}
       }else{0}
     }else{0}
@@ -2095,7 +2732,7 @@ server <- function(input, output, session) {
           datatable(tub_show[which(toupper(tub_show$`Affected gene`)%in%genes_in_gps()&tub_show$PPA>=ppa()),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2116,7 +2753,7 @@ server <- function(input, output, session) {
     if(valid_gene()){
       if(any(columns()==15)){
         if(any(toupper(tub$Approved.symbol)%in%genes_in_gps())){
-          tub[which(toupper(tub$Approved.symbol)%in%genes_in_gps()&tub$PPA>=ppa()),]
+          tub[which(toupper(tub$Approved.symbol)%in%genes_in_gps()&tub$ppa>=ppa()),]
         }else{0}
       }else{0}
     }else{0}
@@ -2156,7 +2793,7 @@ server <- function(input, output, session) {
           datatable(GTEx_eQTL_show[which(toupper(GTEx_eQTL$gene)%in%genes_in_gps()&GTEx_eQTL$ppa>=ppa()),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2218,7 +2855,7 @@ server <- function(input, output, session) {
           datatable(gtex_without_kidney_show[which(toupper(gtex_without_kidney_show[,3])%in%genes_in_gps()& gtex_without_kidney_show$PPA >= ppa()),c(1:13)],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2278,7 +2915,7 @@ server <- function(input, output, session) {
           datatable(GTEx_sQTL_show[which(toupper(GTEx_sQTL$gene)%in%genes_in_gps()& GTEx_sQTL$ppa >= ppa()),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2339,7 +2976,7 @@ server <- function(input, output, session) {
           datatable(sqtl_without_kidney_show[which(toupper(sqtl_without_kidney_show[,3])%in%genes_in_gps()& sqtl_without_kidney_show$PPA >= ppa()),c(1:13)],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2398,7 +3035,7 @@ server <- function(input, output, session) {
           datatable(MGI_show[which(toupper(MGI$human_symbol)%in%genes_in_gps()),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2454,7 +3091,7 @@ server <- function(input, output, session) {
           datatable(OMIM_MIM[which(toupper(OMIM$Gene)%in%genes_in_gps()),c(1,4,2,3)],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2510,15 +3147,16 @@ server <- function(input, output, session) {
     
   })
   
-  #drugability
-  output$drug_gene <- DT::renderDT(server=FALSE, {
+  #drugability 
+  #kidney
+  output$drug_gene_kid <- DT::renderDT(server=FALSE, {
     if(valid_gene()){
       if(any(columns()==25)){
-        if(any(toupper(drugability$gps_gene)%in%genes_in_gps())){
-          datatable(drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps()),],rownames=FALSE,
+        if(any(toupper(drugability$gps_gene[which(drugability$includes_kideny_disease)])%in%genes_in_gps())){
+          datatable(drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps() & drugability$includes_kideny_disease),],rownames=FALSE,
                     options = list(
                       columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                      , scrollX=TRUE,
+                      , scrollX=TRUE, scrollCollapse = TRUE,
                       dom = 'lfrtBip',
                       buttons= list(c('copy', 'excel','csv'))
                     ),
@@ -2538,38 +3176,104 @@ server <- function(input, output, session) {
   
   
   
-  drug_gene <- reactive({
+  drug_gene_kid <- reactive({
     if(valid_gene()){
       if(any(columns()==25)){
-        if(any(toupper(drugability$gps_gene)%in%genes_in_gps())){
-          drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps()),]
+        if(any(toupper(drugability$gps_gene[which(drugability$includes_kideny_disease)])%in%genes_in_gps())){
+          drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps() & drugability$includes_kideny_disease),]
         }else{0}
       }else{0}
     }else{0}
   })
-  
-  output$omim_gene_text <- renderText({
+
+  output$drug_gene_kid_text <- renderText({
     if(inputtype$gene_final=="single"){
-      if(is.data.frame(drug_gene())){
-        paste("Following drug information is described for ",genes_in_gps()," :",sep="")
+      if(is.data.frame(drug_gene_kid())){
+        paste("Following drug information with indication for kidney diseases is described for ",genes_in_gps()," :",sep="")
       }else{
-        paste(genes_in_gps()," is not described as known drug target or to show a drug interaction.",sep="")
+        paste(genes_in_gps()," is not described as known drug target or to show a drug interaction for drugs with indication for kidney diseases.",sep="")
       }
     }else{
-      if(is.data.frame(drug_gene())){
+      if(is.data.frame(drug_gene_kid())){
         if(length(genes_in_gps())==1){
-          paste("Following drug information is described for ",genes_in_gps()," :",sep="")
+          paste("Following drug information with indication for kidney diseases is described for ",genes_in_gps()," :",sep="")
         }else{
-          if(length(unique(omim_gene()[,1]))==1){
-            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene()[,1]))," gene is described as a known drug target or to show a drug interaction:",sep="")
+          if(length(unique(drug_gene_kid()[,1]))==1){
+            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene_kid()[,1]))," gene is described as a known drug target or to show a drug interaction for drugs with indication for kidney diseases:",sep="")
           }else{
-            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene()[,1]))," genes are described as a known drug target or to show a drug interaction:",sep="")
+            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene_kid()[,1]))," genes are described as a known drug target or to show a drug interaction for drugs with indication for kidney diseases:",sep="")
           }
           
         }
         
       }else{
-        paste("None of your ",length(genes_in_gps()), " searched genes included in the GPS is described as a known drug target or to show a drug interaction.",sep="")
+        paste("None of your ",length(genes_in_gps()), " searched genes included in the GPS is described as a known drug target or to show a drug interaction for drugs with indication for kidney diseases.",sep="")
+      }
+    }
+    
+  })
+  
+  #other drugs
+  
+  output$drug_gene_oth <- DT::renderDT(server=FALSE, {
+    if(valid_gene()){
+      if(any(columns()==26)){
+        if(any(toupper(drugability$gps_gene[which(!drugability$includes_kideny_disease)])%in%genes_in_gps())){
+          datatable(drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps() & !drugability$includes_kideny_disease),],rownames=FALSE,
+                    options = list(
+                      columnDefs = list(list(className = 'dt-left', targets = "_all"))
+                      , scrollX=TRUE, scrollCollapse = TRUE,
+                      dom = 'lfrtBip',
+                      buttons= list(c('copy', 'excel','csv'))
+                    ),
+                    extensions = 'Buttons',
+                    escape = FALSE
+                    ,caption = htmltools::tags$caption(
+                      style = 'caption-side: bottom; text-align: left; font-weight: normal;',
+                      htmltools::tags$p('* Link to Therapeutic Target Database (TTD)'),
+                      htmltools::tags$p('** This status is the highest status for any target of this drug. This does not necessarily need to be the queried gene. Check TTD for more information')
+                      
+                    )
+          )
+        }
+      }
+    } 
+  })
+  
+  
+  
+  drug_gene_oth <- reactive({
+    if(valid_gene()){
+      if(any(columns()==26)){
+        if(any(toupper(drugability$gps_gene[which(!drugability$includes_kideny_disease)])%in%genes_in_gps())){
+          drugability_show[which(toupper(drugability$gps_gene)%in%genes_in_gps() & !drugability$includes_kideny_disease),]
+        }else{0}
+      }else{0}
+    }else{0}
+  })
+  
+  output$drug_gene_oth_text <- renderText({
+    if(inputtype$gene_final=="single"){
+      if(is.data.frame(drug_gene_oth())){
+        paste("Following drug information with indication for other diseases or missing indication is described for ",genes_in_gps()," :",sep="")
+      }else{
+        paste(genes_in_gps()," is not described as known drug target or to show a drug interaction for drugs with missing indication or indication for other diseases.",sep="")
+      }
+    }else{
+      if(is.data.frame(drug_gene_oth())){
+        if(length(genes_in_gps())==1){
+          paste("Following drug information with indication for other diseases or missing indication is described for ",genes_in_gps()," :",sep="")
+        }else{
+          if(length(unique(drug_gene_oth()[,1]))==1){
+            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene_oth()[,1]))," gene is described as a known drug target or to show a drug interaction for drugs with missing indication or indication for other diseases:",sep="")
+          }else{
+            paste("Of your ", length(genes_in_gps())," searched genes included in the GPS, ",length(unique(drug_gene_oth()[,1]))," genes are described as a known drug target or to show a drug interaction for drugs with missing indication or indication for other diseases:",sep="")
+          }
+          
+        }
+        
+      }else{
+        paste("None of your ",length(genes_in_gps()), " searched genes included in the GPS is described as a known drug target or to show a drug interaction for drugs with missing indication or indication for other diseases.",sep="")
       }
     }
     
@@ -2603,7 +3307,7 @@ server <- function(input, output, session) {
         datatable(z, rownames=FALSE,
                   options = list(
                     columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                    , scrollX=TRUE,
+                    , scrollX=TRUE, scrollCollapse = TRUE,
                     dom = 'lfrtBip',
                     buttons= list(c('copy', 'excel','csv'))
                   ),
@@ -2619,6 +3323,38 @@ server <- function(input, output, session) {
                   class='display',
                   container = sketchcredvargene
         )%>% formatPercentage('PPA')
+      }
+    }
+  })
+  
+  #dm statistics
+  output$dm_stat_gene <- DT::renderDT(server=FALSE, {
+    if(valid_gene()){
+      if(any(detail_evidence_locus_gene()=="dm_stat")){
+        
+        a=unique(GPS$locus_id[which(toupper(GPS$Gene)%in%genes_in_gps())])
+        snps=cred_var$rsid[which(cred_var$`Locus Id`%in%a &cred_var$ppa >= ppa())]
+        dm_gene = DM_stats_show[which(DM_stats$rsid%in%snps),]
+        
+          
+        
+        
+        datatable(dm_gene, rownames=FALSE,
+                  options = list(
+                    columnDefs = list(list(className = 'dt-left', targets = "_all"))
+                    , scrollX=TRUE, scrollCollapse = TRUE,
+                    dom = 'lfrtBip',
+                    buttons= list(c('copy', 'excel','csv'))
+                  ),
+                  extensions = 'Buttons',
+                  escape=FALSE,
+                  caption = htmltools::tags$caption(
+                    style = 'caption-side: bottom; text-align: left; font-weight: normal;',
+                    htmltools::tags$p('N: Sample size of European-ancestry GWAS meta-analysis for this SNP, Effect allele: eGFRcrea lowering allele in the combined analysis, EAF: Effect allele frequency')
+                  ),
+                  class='display',
+                  container = sketchdmstatgene
+        )
       }
     }
   })
@@ -2709,7 +3445,7 @@ server <- function(input, output, session) {
           th(rowspan = 2, class="Locusidwithcomment hover",'Locus ID', span(class="Locusidcomment", "k: known locus from Wuttke et al. Nat.commun.2019, n: novel locus in Stanzick et al. Nat.commun. 2021")),
           th(rowspan = 2, class="Signalidwithcomment hover",'Signal ID', span(class="Signalidcomment", "ID of independent signals within a locus")),
           th(rowspan = 2, class="validationwithcomment hover",'eGFRcys or BUN validation', span(class="validationcomment",list( "Information whether the locus lead variant is nominal significant (P<0.05) associated with concordent effect direction with ", tags$abbr(title="glomerular filtration rate estimated from serum cystatin C","eGFRcys"),"or ",tags$abbr(title="blood urea nitrogen","BUN")))),
-          th(rowspan = 2, class="DMwithcomment hover",'Signal interaction with DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
+          th(rowspan = 2, class="DMwithcomment hover",'Signal association depends on DM', span(class="DMcomment",list( "Information whether the signal index variant (or a correlated variant) shows significant interaction with ", tags$abbr(title="Diabetes mellitus","DM"), "-status, Winkler et al. 2022"))),
           th(rowspan = 2, class="declinewithcomment hover",'Signal association with eGFRcrea decline', span(class="declinecomment",list( "Information whether the signal index variant (or a correlated variant) was established with annual eGFR-decline, Gorski et al. 2022"))),
           th(rowspan = 2, '# credible variants in signal'),
           th(rowspan = 2, class="maxPPA hover",'max PPA', span(class="maxPPAcomment", "max. probability of a credible variant in this signal to be causal")),
@@ -2718,7 +3454,7 @@ server <- function(input, output, session) {
           if(any(columns()==20)) th(rowspan = 2, class="eqtl", 'Coloc in NEPTUNE tissue'),
           if(any(columns()==21)) th(rowspan = 2, class="pheno",'# kidney phenotypes in mouse'),
           if(any(columns()==22)) th(rowspan = 2, class="pheno", '# kidney phenotypes in human'),
-          if(any(columns()==25)) th(rowspan = 2, class="drug", 'Gene is known as drug target or for drug interaction'),
+          if(any(columns()%in%c(25,26))) th(rowspan = 2, class="drug", 'Gene is known as drug target or for drug interaction'),
           th(rowspan = 2, 'Distance to locus lead variant'),
           th(rowspan = 2, 'Chromosome'),
           th(rowspan = 2, 'Position gene start'),
@@ -2748,7 +3484,7 @@ server <- function(input, output, session) {
     datatable(GPS_gene(), rownames=FALSE,
               options = list(
                 columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                , scrollX=TRUE,
+                , scrollX=TRUE, scrollCollapse = TRUE,
                 lengthChange=TRUE,
                 dom = 'lfrtBip',
                 #buttons = list(extend = "csv", text = "Download Current Page", filename = "page",
@@ -2770,11 +3506,11 @@ server <- function(input, output, session) {
         if(valid_gene()){
           if(any(detail_evidence_locus_gene()=="summary")){
             a=unique(GPS$locus_id[which(toupper(GPS$Gene)%in%genes_in_gps())])
-            b=region_table_show[which(region_table$locus_id%in%a),]
+            b=region_table_show[which(region_table$Locus_id%in%a),]
             datatable(b[order(b[,1],b[,2]),], rownames=F,
                       options = list(
                         columnDefs = list(list(className = 'dt-left', targets = "_all"))
-                        , scrollX=TRUE,
+                        , scrollX=TRUE, scrollCollapse = TRUE,
                         dom = 'lfrtBip',
                         buttons= list(c('copy', 'excel','csv'))),
                       extensions = 'Buttons',
@@ -2865,9 +3601,11 @@ server <- function(input, output, session) {
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_GTEx_wo_kidney_sqtl_gene", condition= (any(columns()==19)&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_mgi_gene", condition= (any(columns()==20)&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_omim_gene", condition= (any(columns()==21)&valid_gene()))})
-  observeEvent(go$gene,{shinyjs::toggleElement(id="div_drug_gene", condition= (any(columns()==25)&valid_gene()))})
+  observeEvent(go$gene,{shinyjs::toggleElement(id="div_drug_gene_kid", condition= (any(columns()==25)&valid_gene()))})
+  observeEvent(go$gene,{shinyjs::toggleElement(id="div_drug_gene_oth", condition= (any(columns()==26)&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_summary", condition= any(detail_evidence_locus_gene()=="summary"&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_cred_var_gene", condition= any(detail_evidence_locus_gene()=="cred_var"&valid_gene()))})
+  observeEvent(go$gene,{shinyjs::toggleElement(id="div_dm_stat_gene", condition= any(detail_evidence_locus_gene()=="dm_stat"&valid_gene()))})
   observeEvent(go$gene,{shinyjs::toggleElement(id="div_locus_zoom_gene", condition= any(input$gene.locuszoom=="locus_zoom"&valid_gene()))})
   
   

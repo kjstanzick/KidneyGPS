@@ -25,6 +25,14 @@ a:visited {
   float: right;
 }
 
+#gpsgo {
+  font-weight: bold;
+  font-size: large;
+  border-width: thick;
+  border-color: #428c20;
+  border-radius: 10px;
+}
+
 #reset_variant,#reset_gene{
   margin-top: -30px;
 }
@@ -63,7 +71,7 @@ a:visited {
   padding: 0px 4px;
 }
 
-.drug, #div_drug_gene th{
+.drug, #div_drug_gene_kid th, #div_drug_gene_oth th{
   background-color: #d9b3ff;
 }
 
@@ -120,6 +128,93 @@ a:visited {
 .snpinputbox .shiny-options-group .checkbox:nth-of-type(7){
   background-color: #ffdb99;
 }
+
+
+
+
+#gpscontainermap, #gpscontainersignal, #gpscontainerfilter {
+ background-color: #f5f5f5;
+ min-height: 400px;
+ max-height: 1000px;
+ border: 1px solid #dddddd;
+ border-radius: 5px;
+ padding: 15px;
+ margin: 10px;
+}
+
+.gps-container {
+  display: flex;
+}
+
+/*.gps-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 10px;
+}*/
+
+
+
+/* Moving the div to the right */
+#gpsppafilter {
+ margin-left: 15px;
+}
+
+#gpsmapppafilter {
+ margin-left: 15px;
+}
+
+
+/*#nofiltersignal, */
+#nofiltermap, #nofiltergenelist { /*i have no idea why this needs to be here, but it has to. */
+ position: absolute;
+ bottom: 0;
+}
+
+#furthersignalfilter label {
+  font-weight: normal;
+}
+/*#nofiltersignal {
+ position: absolute;
+ bottom: 0;
+ margin-bottom: 5px;
+}*/
+#nofiltermap {
+ position: absolute;
+ bottom: 0;
+ margin-bottom: 5px;
+ overflow-x: visible;;
+}
+#nofiltergenelist {
+ position: absolute;
+ bottom: 0;
+ margin-bottom: 5px;
+}
+
+#GPS div.dataTables_wrapper {
+ position:relative;
+ overflow-x: scroll;
+}
+
+#DataTables_Table_0_length {
+ padding-right: 2px;
+ padding-left: 2px;
+ margin-right: 7px;
+ /*! margin-left: 3px; */
+}
+
+#ppafiltergenemap {
+  border-left: 1px dashed grey; 
+
+}
+.shiny-input-container:not(.shiny-input-container-inline) {
+ width: initial;
+ max-width: 100%
+}
+
 
 
 
@@ -295,7 +390,7 @@ th.hover:hover{
   background-color: #e6e6e6;
 }
 
-/*wenn ich einzelne Table-header Cellen farbig machen möchte, muss ich denen nur vorher class zuweisen 
+/*wenn ich einzelne Table-header Cellen farbig machen m?chte, muss ich denen nur vorher class zuweisen 
 #GPSrows thead th.Geneofficial  {
   background-color: red;
 }
@@ -319,6 +414,31 @@ th.hover:hover{
 
 td[data-type="factor"]{
     width: 80px !important;
+}
+#dm_stat_gene tr:nth-child(1) th:nth-child(3) {
+  border-right: 1px solid lightgray;
+}
+#dm_stat_gene tr:nth-child(1) th:nth-child(4) {
+  border-right: 1px solid lightgray;
+}
+#dm_stat_gene tr:nth-child(1) th:nth-child(5) {
+  border-right: 1px solid lightgray;
+}
+
+#dm_stat_gene tr:nth-child(2) th:nth-child(5) {
+  border-right: 1px solid lightgray;
+}
+
+#dm_stat_gene tr:nth-child(2) th:nth-child(10) {
+  border-right: 1px solid lightgray;
+}
+
+
+
+#dm_stat_gene td:nth-child(3),
+#dm_stat_gene td:nth-child(8),
+#dm_stat_gene td:nth-child(13) {
+  border-right: 1px solid lightgray;
 }
 
 
