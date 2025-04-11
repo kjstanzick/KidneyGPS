@@ -1,3 +1,7 @@
+# Update 🚨
+A newer version of this GPS is now available on GitHub [here](https://github.com/genepi-regensburg/kidneyGPS/tree/main).  
+The repository shown here corresponds to the original publication **[Stanzick et al., *Nature Communications*, 2021](https://pubmed.ncbi.nlm.nih.gov/34272381)**.
+
 # KidneyGPS
 RShiny web application for navigating genome-wide association study (GWAS) results and their functional and regulatory annotation to guide gene prioritization.
 
